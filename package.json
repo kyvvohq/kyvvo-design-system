@@ -1,0 +1,20 @@
+{
+  "name": "@kyvvohq/design-system",
+  "version": "1.0.0",
+  "description": "Fundações de design compartilhadas entre os produtos Kyvvo (Studio, People).",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyvvohq/kyvvo-design-system.git"
+  },
+  "files": [
+    "tokens.foundations.css"
+  ],
+  "exports": {
+    "./tokens.foundations.css": "./tokens.foundations.css",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

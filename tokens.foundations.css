@@ -1,0 +1,26 @@
+/* @kyvvohq/design-system — fundações compartilhadas pelos produtos Kyvvo.
+ *
+ * Só entram aqui tokens que hoje já são idênticos byte-a-byte no Studio
+ * (painel + landing) e no People: a escala de espaçamento e a escala de raio.
+ * Cor, superfície e mecanismo de tema seguem no vocabulário próprio de cada
+ * produto até a unificação (tarefa dedicada, com QA visual, fora deste pacote).
+ *
+ * Fonte da verdade do design system completo: docs/design-system.md no repo
+ * kyvvo, e o arquivo pen.dev "Kyvvo DS".
+ */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+}
