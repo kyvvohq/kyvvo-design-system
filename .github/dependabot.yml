@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # Sem dependências npm — só mantém as actions do workflow de publish atualizadas.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
