@@ -1,26 +1,9 @@
-/* @kyvvohq/design-system — fundações compartilhadas pelos produtos Kyvvo.
+/* @kyvvohq/design-system — compatibilidade.
  *
- * Só entram aqui tokens que hoje já são idênticos byte-a-byte no Studio
- * (painel + landing) e no People: a escala de espaçamento e a escala de raio.
- * Cor, superfície e mecanismo de tema seguem no vocabulário próprio de cada
- * produto até a unificação (tarefa dedicada, com QA visual, fora deste pacote).
- *
- * Fonte da verdade do design system completo: docs/design-system.md no repo
- * kyvvo, e o arquivo pen.dev "Kyvvo DS".
+ * Na v1 este arquivo trazia só as escalas de espaçamento e raio. Na v2 o set
+ * canônico completo (cor, superfície, texto, tema) vive em tokens.css e as
+ * fundações foram absorvidas lá. Este arquivo agora só reexporta, pra não
+ * quebrar quem ainda importa "@kyvvohq/design-system/tokens.foundations.css".
+ * Prefira importar tokens.css diretamente.
  */
-:root {
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
-
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 999px;
-}
+@import "./tokens.css";

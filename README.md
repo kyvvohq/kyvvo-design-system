@@ -1,52 +1,70 @@
 # @kyvvohq/design-system
 
-Fundações de design compartilhadas entre os produtos Kyvvo (Studio, People).
+Tokens de design compartilhados entre os produtos Kyvvo (Studio, People).
 
-## O que tem aqui hoje
+## O que tem aqui
 
-`tokens.foundations.css` — **só** a escala de espaçamento (`--space-1..8`) e a
-escala de raio (`--radius-sm..full`). Esses são os únicos tokens que hoje já são
-idênticos byte-a-byte no painel do Studio, na landing do Studio e no People.
+- **`tokens.css`** — o set canônico completo: cor, superfície, texto, marca,
+  semânticos, overlay/sombra, escala de espaçamento (8pt), raio e tipografia.
+  `:root` é o **tema claro** (default); o escuro é override em
+  `:root[data-theme="dark"]`.
+- **`tokens.foundations.css`** — só reexporta `tokens.css` (compat da v1, que
+  publicava apenas espaçamento + raio).
 
-Cor, superfície e mecanismo de tema (claro/escuro) ainda divergem entre os
-produtos — cada um mantém seu vocabulário. Unificar isso é uma tarefa dedicada,
-com QA visual, fora deste pacote por ora.
+Base do vocabulário: arquivo pen.dev "Kyvvo DS" (o `shell.css` do Kyvvo People
+já usava esse dialeto). Fonte da verdade: `docs/design-system.md` no repo
+`kyvvo`.
 
-Fonte da verdade do design system completo: `docs/design-system.md` no repo
-`kyvvo` e o arquivo pen.dev "Kyvvo DS".
+## Tema
+
+O produto controla o tema pelo atributo `data-theme` no `<html>`:
+
+- ausente ou `data-theme="light"` → claro
+- `data-theme="dark"` → escuro
+
+Padrão: aplicar por um script síncrono no `<head>`, antes do primeiro paint,
+lendo de `localStorage`:
+
+```html
+<script>
+  document.documentElement.setAttribute(
+    'data-theme',
+    localStorage.getItem('<prefixo>_tema') || 'light'
+  );
+</script>
+```
 
 ## Instalar
 
-Consumidores precisam de um `.npmrc` apontando o escopo `@kyvvohq` para o
-GitHub Packages:
+`.npmrc` no repo consumidor apontando o escopo `@kyvvohq` pro GitHub Packages
+(`NPM_PACKAGES_TOKEN` = PAT classic com `read:packages`):
 
 ```
 @kyvvohq:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${NPM_PACKAGES_TOKEN}
 ```
 
-`NPM_PACKAGES_TOKEN` = PAT (classic) com `read:packages`. Nos repos `kyvvo` e
-`kyvvo-people` já existe como secret; localmente, exporte no ambiente.
-
 ```
 npm install @kyvvohq/design-system
 ```
 
-## Usar
+## Servir e usar
 
-```css
-@import "@kyvvohq/design-system/tokens.foundations.css";
+Não há bundler nos produtos — o CSS é servido cru de `public/`. Sirva
+`node_modules/@kyvvohq/design-system/` numa rota estática (ex: `/ds/`) e linke
+`tokens.css` **antes** do CSS próprio da página:
+
+```html
+<link rel="stylesheet" href="/ds/tokens.css">
+<link rel="stylesheet" href="/style.css">
 ```
-
-Não há bundler nos produtos — o arquivo precisa ser servido estaticamente
-(copiado para a pasta pública no build, ou servido de `node_modules`).
 
 ## Versionamento
 
-SemVer, versionado por tag git. Push de tag `v*` dispara o workflow `publish`,
-que confere `package.json.version == tag` e roda `npm publish` no GitHub
-Packages privado da org `kyvvohq`.
+SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
+`package.json.version == tag` e roda `npm publish`.
 
-- **patch** — valor de token corrigido sem mudança de intenção visual
-- **minor** — token novo adicionado
-- **major** — token removido ou renomeado
+- **major** — token removido/renomeado, ou mudança de mecanismo (ex: v1→v2:
+  atributo de tema, `:root` passou a ser claro)
+- **minor** — token novo
+- **patch** — valor corrigido sem mudança de intenção visual

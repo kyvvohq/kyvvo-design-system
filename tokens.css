@@ -1,0 +1,112 @@
+/* @kyvvohq/design-system — set canônico de tokens dos produtos Kyvvo.
+ *
+ * Base: vocabulário do arquivo pen.dev "Kyvvo DS" (o mesmo que o shell.css do
+ * Kyvvo People já usava), estendido com o que o painel do Studio precisa.
+ * Fonte da verdade: docs/design-system.md no repo kyvvo + o arquivo pen.dev.
+ *
+ * Tema: `:root` é o CLARO (default). O escuro é override em
+ * `:root[data-theme="dark"]` — o produto seta `data-theme` no <html>
+ * (ausente / "light" = claro).
+ */
+:root {
+  color-scheme: light;
+
+  /* superfície */
+  --bg: #F8F9FC;
+  --card: #FFFFFF;
+  --surface-muted: #F1F3F8;
+  --surface-hover: #ECEFF6;
+  --input-bg: #FFFFFF;
+  --border: #E7EAF2;
+  --border-strong: #D7DCE8;
+
+  /* texto */
+  --text: #0F111A;
+  --text-secondary: #2B3040;
+  --muted-strong: #5A6274;
+  --muted: #6B7385;
+  --text-faint: #8A90A0;
+
+  /* marca */
+  --accent: #7C5CFC;
+  --accent-rgb: 124, 92, 252;
+  --accent-hover: #6A4CE0;
+  --accent-dark: #6344E8;
+  --accent-strong: #4E33C4;
+  --accent-tint: #F1EEFF;
+  --cyan: #22C7F2;
+
+  /* semânticos */
+  --success: #12B76A;
+  --success-rgb: 18, 183, 106;
+  --success-bg: rgba(18, 183, 106, .10);
+  --warning: #F79009;
+  --warning-rgb: 247, 144, 9;
+  --warning-text: #B54708;
+  --warning-bg: rgba(247, 144, 9, .12);
+  --danger: #F04438;
+  --danger-rgb: 240, 68, 56;
+  --danger-bg: rgba(240, 68, 56, .10);
+  --info: #22C7F2;
+  --whatsapp: #25D366;
+
+  /* overlay / sombra */
+  --overlay: rgba(15, 17, 26, .45);
+  --shadow-rgb: 15, 17, 26;
+
+  /* fundações — escala 8pt (base 4px) + raio */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* tipografia */
+  --font-display: 'Space Grotesk', Arial, sans-serif;
+  --font-ui: 'Inter', Arial, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0B0D13;
+  --card: #11131B;
+  --surface-muted: #171A24;
+  --surface-hover: #1E2230;
+  --input-bg: #0D1017;
+  --border: #212533;
+  --border-strong: #2E3444;
+
+  --text: #F5F6FA;
+  --text-secondary: #C7CBD9;
+  --muted-strong: #A2A9BA;
+  --muted: #7C8497;
+  --text-faint: #616879;
+
+  --accent-hover: #8B6FFF;
+  --accent-dark: #9578FF;
+  --accent-strong: #C9BCFF;
+  --accent-tint: rgba(124, 92, 252, .16);
+
+  --success: #4ADE80;
+  --success-rgb: 74, 222, 128;
+  --success-bg: rgba(74, 222, 128, .12);
+  --warning: #F0B354;
+  --warning-rgb: 240, 179, 84;
+  --warning-text: #FACC15;
+  --warning-bg: rgba(240, 179, 84, .12);
+  --danger: #FF6B6B;
+  --danger-rgb: 255, 107, 107;
+  --danger-bg: rgba(255, 107, 107, .12);
+
+  --overlay: rgba(0, 0, 0, .5);
+  --shadow-rgb: 0, 0, 0;
+}
