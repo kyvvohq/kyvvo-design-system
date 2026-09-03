@@ -10,6 +10,13 @@ Tokens de design compartilhados entre os produtos Kyvvo (Studio, People).
   `:root[data-theme="dark"]`.
 - **`tokens.foundations.css`** — só reexporta `tokens.css` (compat da v1, que
   publicava apenas espaçamento + raio).
+- **`favicon.svg`** — o mark do Kyvvo (quadrado `--accent` + "vv"). Único pros
+  produtos; o que varia é o **nome do produto**, não o ícone.
+- **`logo.svg`** — o wordmark "Kyvvo". Idem: o nome do produto ("Studio",
+  "People") acompanha à parte, não é assado no logo.
+
+Trocar a marca = editar `favicon.svg` / `logo.svg` aqui, bump de versão, e os
+produtos pegam no próximo `npm install` (todos já em `^2.x`).
 
 Base do vocabulário: arquivo pen.dev "Kyvvo DS" (o `shell.css` do Kyvvo People
 já usava esse dialeto). Fonte da verdade: `docs/design-system.md` no repo
@@ -55,6 +62,7 @@ Não há bundler nos produtos — o CSS é servido cru de `public/`. Sirva
 `tokens.css` **antes** do CSS próprio da página:
 
 ```html
+<link rel="icon" type="image/svg+xml" href="/ds/favicon.svg">
 <link rel="stylesheet" href="/ds/tokens.css">
 <link rel="stylesheet" href="/style.css">
 ```
