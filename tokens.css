@@ -16,6 +16,7 @@
   --card: #FFFFFF;
   --surface-muted: #F1F3F8;
   --surface-hover: #ECEFF6;
+  --sunken: #E7EAF2;
   --input-bg: #FFFFFF;
   --border: #E7EAF2;
   --border-strong: #D7DCE8;
@@ -81,6 +82,7 @@
   --card: #1C2029;
   --surface-muted: #242834;
   --surface-hover: #2C313F;
+  --sunken: #0B0D13;
   --input-bg: #171A22;
   --border: #2C313F;
   --border-strong: #3A4152;

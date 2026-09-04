@@ -8,6 +8,11 @@ Tokens de design compartilhados entre os produtos Kyvvo (Studio, People).
   semânticos, overlay/sombra, escala de espaçamento (8pt), raio e tipografia.
   `:root` é o **tema claro** (default); o escuro é override em
   `:root[data-theme="dark"]`.
+  - `--sunken` — superfície **mais recuada** que `--card`, pra elementos que
+    devem parecer "afundados" na página (a régua de hora da agenda, cabeçalho
+    fixo de tabela, poço de um input). No claro coincide com `--border`; no
+    escuro é o tom mais escuro do pacote (mais escuro que `--bg`), de
+    propósito — uso pontual, não vira fundo de página (isso é `--bg`).
 - **`tokens.foundations.css`** — só reexporta `tokens.css` (compat da v1, que
   publicava apenas espaçamento + raio).
 - **`favicon.svg`** — o mark do Kyvvo (quadrado `--accent` + "vv"). Único pros
