@@ -114,6 +114,16 @@ dinâmico — nunca precisa bumpar. Também dá pra montar à mão:
 Mudou o texto/logo/estilo do rodapé? Edita `components.css`/`.js` aqui, bump
 de versão — todas as telas logadas de Studio e People mudam juntas.
 
+### Agenda (Studio)
+
+`components.css` também traz o visual da **view Dia da agenda** — grade,
+cards (horizontal e compactos lado a lado), chips de filtro por
+profissional, régua de hora, rodapé de resumo, tons por status. Classes
+`.agenda-*` / `.grade-resumo` (ainda sem prefixo `.ds-`, rename futuro). O
+`app.js` do painel só monta a marcação com essas classes — mexer no visual
+da agenda inteira é aqui + bump de versão. Studio-only por ora (o People
+não tem agenda).
+
 ## Logo por tema
 
 `logo.svg` (claro) / `logo-dark.svg` (escuro) — troque o `src` inteiro no
