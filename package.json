@@ -1,7 +1,7 @@
 {
   "name": "@kyvvohq/design-system",
-  "version": "2.3.0",
-  "description": "Tokens + assets de marca compartilhados entre os produtos Kyvvo (Studio, People).",
+  "version": "2.4.0",
+  "description": "Tokens + assets de marca + componentes compartilhados entre os produtos Kyvvo (Studio, People).",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
@@ -10,6 +10,8 @@
   "files": [
     "tokens.css",
     "tokens.foundations.css",
+    "components.css",
+    "components.js",
     "favicon.svg",
     "logo.svg",
     "logo-dark.svg"
@@ -17,6 +19,8 @@
   "exports": {
     "./tokens.css": "./tokens.css",
     "./tokens.foundations.css": "./tokens.foundations.css",
+    "./components.css": "./components.css",
+    "./components.js": "./components.js",
     "./favicon.svg": "./favicon.svg",
     "./logo.svg": "./logo.svg",
     "./logo-dark.svg": "./logo-dark.svg",
