@@ -1,0 +1,31 @@
+/* @kyvvohq/design-system — componentes compartilhados entre os produtos
+ * Kyvvo (Studio, People). Ao contrário de tokens.css (só variáveis), aqui
+ * são classes prontas: marcação + estilo definidos num lugar só, pra
+ * mudança de componente valer em todo produto no próximo deploy.
+ *
+ * Convenção: prefixo `.ds-`. Os componentes leem os tokens de tokens.css,
+ * então respeitam tema claro/escuro sem regra a mais.
+ *
+ * Alguns componentes têm um par em components.js que hidrata a marcação a
+ * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
+ * rodapé completo). Carregue os dois:
+ *   <link rel="stylesheet" href="/ds/components.css">
+ *   <script src="/ds/components.js"></script>
+ */
+
+/* ---------- Rodapé de área logada ---------- */
+/* Linha de borda no topo, centralizado, logo + copyright. O ano e a troca
+ * de logo por tema são feitos pelo components.js. */
+.ds-rodape {
+  padding: 22px var(--space-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.ds-rodape img { height: 14px; width: auto; }

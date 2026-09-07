@@ -1,6 +1,8 @@
 # @kyvvohq/design-system
 
-Tokens de design compartilhados entre os produtos Kyvvo (Studio, People).
+Tokens, assets de marca e **componentes** compartilhados entre os produtos
+Kyvvo (Studio, People). A ideia: o que é comum vive aqui, mudança num lugar
+só vale nos dois produtos no próximo deploy.
 
 ## O que tem aqui
 
@@ -15,6 +17,9 @@ Tokens de design compartilhados entre os produtos Kyvvo (Studio, People).
     propósito — uso pontual, não vira fundo de página (isso é `--bg`).
 - **`tokens.foundations.css`** — só reexporta `tokens.css` (compat da v1, que
   publicava apenas espaçamento + raio).
+- **`components.css`** + **`components.js`** — componentes prontos (marcação +
+  estilo), prefixo `.ds-`. Ao contrário dos tokens, aqui a mudança já vale em
+  todo produto sem tocar em código de tela. Ver "Componentes" abaixo.
 - **`favicon.svg`** — o mark do Kyvvo (quadrado `--accent` + "vv"). Único pros
   produtos; o que varia é o **nome do produto**, não o ícone.
 - **`logo.svg`** / **`logo-dark.svg`** — o wordmark "Kyvvo", um arquivo por
@@ -75,6 +80,39 @@ Não há bundler nos produtos — o CSS é servido cru de `public/`. Sirva
 <link rel="stylesheet" href="/ds/tokens.css">
 <link rel="stylesheet" href="/style.css">
 ```
+
+## Componentes
+
+`components.css` (estilo) + `components.js` (marcação/comportamento) — o que
+é igual entre as telas vive aqui, não copiado em cada uma. Mudar o
+componente aqui + bump de versão = todas as telas dos dois produtos pegam
+no próximo deploy, sem editar tela nenhuma.
+
+```html
+<link rel="stylesheet" href="/ds/tokens.css">
+<link rel="stylesheet" href="/ds/components.css">
+<link rel="stylesheet" href="/style.css">
+...
+<script src="/ds/components.js"></script>
+```
+
+O `components.js` é script clássico (sem módulo): expõe `window.KyvvoDS` e,
+no `DOMContentLoaded`, hidrata elementos marcados com `data-ds-*`. A ordem
+em relação ao JS do produto (`app.js`/`shell.js`) não importa.
+
+### `data-ds-rodape` — rodapé de área logada
+
+```html
+<footer data-ds-rodape></footer>
+```
+
+Vira: linha de borda no topo, logo (troca com o tema via `data-ds-logo`) +
+"© <ano corrente> Kyvvo Tecnologia. Todos os direitos reservados." O ano é
+dinâmico — nunca precisa bumpar. Também dá pra montar à mão:
+`KyvvoDS.rodapeLogado()` devolve o HTML interno.
+
+Mudou o texto/logo/estilo do rodapé? Edita `components.css`/`.js` aqui, bump
+de versão — todas as telas logadas de Studio e People mudam juntas.
 
 ## Logo por tema
 
