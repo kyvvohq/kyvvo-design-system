@@ -1,0 +1,55 @@
+name: Deploy (consumo em tempo real)
+
+# Antes, cada produto instalava @kyvvohq/design-system via npm e travava a
+# versão no seu próprio package-lock.json — publicar uma versão nova não
+# propagava sozinho, cada consumidor precisava atualizar o lockfile e fazer
+# deploy (foi assim que o kyvvo-people ficou preso numa versão atrás dos
+# outros). Esse workflow substitui isso: todo push na main copia os arquivos
+# estáticos direto pro EC2, num diretório único (/opt/kyvvo/design-system/)
+# que o nginx serve pra studio/people/admin.kyvvo.com.br via `alias` — sem
+# passar por node_modules/build/deploy de produto nenhum. Mudou aqui, vale
+# nos 3 produtos em segundos.
+#
+# O publish.yml (tag v* -> npm publish) continua existindo em paralelo, pra
+# quem eventualmente quiser instalar o pacote via npm por outro motivo — mas
+# deixou de ser o caminho que os produtos usam pra servir /ds/*.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tokens.css"
+      - "tokens.foundations.css"
+      - "components.css"
+      - "components.js"
+      - "favicon.svg"
+      - "logo.svg"
+      - "logo-dark.svg"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar chave SSH
+        id: sshkey
+        run: |
+          KEY="$(printf '%s' '${{ secrets.EC2_SSH_KEY_B64 }}' | base64 -d)"
+          while IFS= read -r line; do [ -n "$line" ] && echo "::add-mask::$line"; done <<< "$KEY"
+          {
+            echo 'value<<KEYEOF'
+            printf '%s\n' "$KEY"
+            echo 'KEYEOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Copiar arquivos do DS pro EC2
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ steps.sshkey.outputs.value }}
+          source: "tokens.css,tokens.foundations.css,components.css,components.js,favicon.svg,logo.svg,logo-dark.svg"
+          target: "/opt/kyvvo/design-system"
+          strip_components: 0

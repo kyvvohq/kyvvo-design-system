@@ -28,9 +28,9 @@ só vale nos dois produtos no próximo deploy.
   jeito de themear é trocar o arquivo inteiro, não recolorir. O nome do
   produto ("Studio", "People") acompanha à parte, não é assado no logo.
 
-Trocar a marca = editar `favicon.svg` / `logo.svg` / `logo-dark.svg` aqui,
-bump de versão, e os produtos pegam no próximo `npm install` (todos já em
-`^2.x`).
+Trocar a marca = editar `favicon.svg` / `logo.svg` / `logo-dark.svg` aqui e
+mergear na main — os produtos pegam em segundos (ver "Consumo em tempo
+real" abaixo).
 
 Base do vocabulário: arquivo pen.dev "Kyvvo DS" (o `shell.css` do Kyvvo People
 já usava esse dialeto). Fonte da verdade: `docs/design-system.md` no repo
@@ -55,7 +55,30 @@ lendo de `localStorage`:
 </script>
 ```
 
-## Instalar
+## Consumo em tempo real (produção)
+
+Desde 2026-09-16, os produtos (Studio/People/Admin) **não** servem `/ds/*` a
+partir do próprio `node_modules` — isso exigia `npm install` + bump de
+lockfile + deploy em cada repo pra uma mudança propagar, e cada um podia
+ficar numa versão diferente (foi o que aconteceu: People ficou preso na
+2.4.0 enquanto os outros já estavam na 2.5.0).
+
+Agora: todo push na `main` (`.github/workflows/deploy.yml`) copia os
+arquivos direto pro EC2, num diretório único (`/opt/kyvvo/design-system/`),
+e o nginx serve `/ds/` pros 3 domínios a partir **desse mesmo lugar**
+(`alias`, não `proxy_pass` pro container do produto). Uma mudança aqui
+mergeada na main já vale nos 3 produtos em segundos — sem tocar em código,
+sem redeploy de produto nenhum, sem versão pra sincronizar.
+
+Trade-off consciente: sem trava por versão, um erro aqui afeta os 3
+produtos ao vivo imediatamente (decisão do Bruno, 2026-09-16 — antes disso
+o pacote era instalado via npm com versão travada por repo).
+
+## Instalar via npm (opcional, não é o caminho usado em produção)
+
+O `publish.yml` (tag `v*` → `npm publish`) continua existindo pra quem
+quiser instalar o pacote via npm por outro motivo (não é assim que
+Studio/People/Admin consomem `/ds/*` hoje — ver seção acima).
 
 `.npmrc` no repo consumidor apontando o escopo `@kyvvohq` pro GitHub Packages
 (`NPM_PACKAGES_TOKEN` = PAT classic com `read:packages`):
@@ -69,11 +92,10 @@ lendo de `localStorage`:
 npm install @kyvvohq/design-system
 ```
 
-## Servir e usar
+## Linkar nas páginas
 
-Não há bundler nos produtos — o CSS é servido cru de `public/`. Sirva
-`node_modules/@kyvvohq/design-system/` numa rota estática (ex: `/ds/`) e linke
-`tokens.css` **antes** do CSS próprio da página:
+Linke `tokens.css` **antes** do CSS próprio da página, sempre a partir de
+`/ds/` (servido pelo nginx direto do diretório compartilhado, ver acima):
 
 ```html
 <link rel="icon" type="image/svg+xml" href="/ds/favicon.svg">
@@ -85,8 +107,8 @@ Não há bundler nos produtos — o CSS é servido cru de `public/`. Sirva
 
 `components.css` (estilo) + `components.js` (marcação/comportamento) — o que
 é igual entre as telas vive aqui, não copiado em cada uma. Mudar o
-componente aqui + bump de versão = todas as telas dos dois produtos pegam
-no próximo deploy, sem editar tela nenhuma.
+componente aqui e mergear na main = todas as telas dos dois produtos mudam
+juntas em segundos, sem editar tela nenhuma e sem deploy de produto.
 
 ```html
 <link rel="stylesheet" href="/ds/tokens.css">
@@ -111,8 +133,8 @@ Vira: linha de borda no topo, logo (troca com o tema via `data-ds-logo`) +
 dinâmico — nunca precisa bumpar. Também dá pra montar à mão:
 `KyvvoDS.rodapeLogado()` devolve o HTML interno.
 
-Mudou o texto/logo/estilo do rodapé? Edita `components.css`/`.js` aqui, bump
-de versão — todas as telas logadas de Studio e People mudam juntas.
+Mudou o texto/logo/estilo do rodapé? Edita `components.css`/`.js` aqui e
+mergeia na main — todas as telas logadas de Studio e People mudam juntas.
 
 ### Agenda (Studio)
 
@@ -121,7 +143,7 @@ cards (horizontal e compactos lado a lado), chips de filtro por
 profissional, régua de hora, rodapé de resumo, tons por status. Classes
 `.agenda-*` / `.grade-resumo` (ainda sem prefixo `.ds-`, rename futuro). O
 `app.js` do painel só monta a marcação com essas classes — mexer no visual
-da agenda inteira é aqui + bump de versão. Studio-only por ora (o People
+da agenda inteira é só aqui, mergeado na main. Studio-only por ora (o People
 não tem agenda).
 
 ## Logo por tema
@@ -140,6 +162,10 @@ function aplicarLogo() {
 ```
 
 ## Versionamento
+
+Só vale pro caminho npm opcional (ver "Instalar via npm" acima) — o consumo
+real em produção (`/ds/*` via nginx) não depende de tag/versão nenhuma, é o
+conteúdo da `main` sempre.
 
 SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
 `package.json.version == tag` e roda `npm publish`.
