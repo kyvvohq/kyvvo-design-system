@@ -19,6 +19,7 @@
  * ("..."), o filtro dropdown, a barra de pesquisa, a barra de filtros e as
  * máscaras de campo (data-ds-mascara).
  * Acréscimo da v2.7.0: as abas (data-ds-abas).
+ * Acréscimo da v2.8.0: o carrossel (data-ds-carrossel).
  */
 (function () {
   'use strict';
@@ -964,6 +965,144 @@
     for (var i = 0; i < els.length; i++) prepararAbas(els[i]);
   }
 
+  // ---- Carrossel ----
+  // <div class="ds-carrossel" data-ds-carrossel aria-label="..."> com um
+  // .ds-carrossel-trilho (filho direto; rola na horizontal com snap) de
+  // .ds-carrossel-slide e, opcionalmente, .ds-carrossel-controles com os
+  // botões .ds-carrossel-ant / .ds-carrossel-prox e .ds-carrossel-pontos
+  // (vazio: o script cria um ponto por slide). Um slide por vez, sem
+  // rotação automática.
+
+  function carrosselFilho(el, classe) {
+    for (var i = 0; i < el.children.length; i++) {
+      if (el.children[i].classList.contains(classe)) return el.children[i];
+    }
+    return null;
+  }
+
+  function carrosselSlides(el) {
+    var trilho = carrosselFilho(el, 'ds-carrossel-trilho');
+    var lista = [];
+    if (!trilho) return lista;
+    for (var i = 0; i < trilho.children.length; i++) {
+      if (trilho.children[i].classList.contains('ds-carrossel-slide')) lista.push(trilho.children[i]);
+    }
+    return lista;
+  }
+
+  function carrosselIndice(el) {
+    var i = parseInt(el.getAttribute('data-ds-indice'), 10);
+    return isNaN(i) ? 0 : i;
+  }
+
+  function carrosselAtualizar(el, indice, disparar) {
+    var slides = carrosselSlides(el);
+    if (!slides.length) return;
+    if (indice < 0) indice = 0;
+    if (indice > slides.length - 1) indice = slides.length - 1;
+    var mudou = el.getAttribute('data-ds-indice') !== String(indice);
+    el.setAttribute('data-ds-indice', String(indice));
+    for (var i = 0; i < slides.length; i++) {
+      var ativo = i === indice;
+      if (ativo) { slides[i].removeAttribute('aria-hidden'); slides[i].removeAttribute('inert'); }
+      else { slides[i].setAttribute('aria-hidden', 'true'); slides[i].setAttribute('inert', ''); }
+    }
+    var ctl = carrosselFilho(el, 'ds-carrossel-controles');
+    if (ctl) {
+      var pontos = ctl.querySelectorAll('.ds-carrossel-ponto');
+      for (var j = 0; j < pontos.length; j++) {
+        if (j === indice) pontos[j].setAttribute('aria-current', 'true');
+        else pontos[j].removeAttribute('aria-current');
+      }
+      var ant = ctl.querySelector('.ds-carrossel-ant');
+      var prox = ctl.querySelector('.ds-carrossel-prox');
+      if (ant) ant.disabled = indice === 0;
+      if (prox) prox.disabled = indice === slides.length - 1;
+    }
+    if (mudou && disparar) {
+      el.dispatchEvent(new CustomEvent('ds-carrossel-alterar', {
+        bubbles: true,
+        detail: { indice: indice, slide: slides[indice] }
+      }));
+    }
+  }
+
+  function prepararCarrossel(el) {
+    if (el.getAttribute('data-ds-preparado') === 'carrossel') return;
+    el.setAttribute('data-ds-preparado', 'carrossel');
+    el.classList.add('ds-carrossel');
+    if (!el.getAttribute('role')) el.setAttribute('role', 'region');
+    if (!el.getAttribute('aria-roledescription')) el.setAttribute('aria-roledescription', 'carrossel');
+    var trilho = carrosselFilho(el, 'ds-carrossel-trilho');
+    var slides = carrosselSlides(el);
+    for (var i = 0; i < slides.length; i++) {
+      if (!slides[i].getAttribute('role')) slides[i].setAttribute('role', 'group');
+      if (!slides[i].getAttribute('aria-roledescription')) slides[i].setAttribute('aria-roledescription', 'slide');
+      if (!slides[i].getAttribute('aria-label')) slides[i].setAttribute('aria-label', (i + 1) + ' de ' + slides.length);
+    }
+    var ctl = carrosselFilho(el, 'ds-carrossel-controles');
+    if (ctl) {
+      var ant = ctl.querySelector('.ds-carrossel-ant');
+      var prox = ctl.querySelector('.ds-carrossel-prox');
+      if (ant) { ant.type = 'button'; if (!ant.getAttribute('aria-label')) ant.setAttribute('aria-label', 'Slide anterior'); }
+      if (prox) { prox.type = 'button'; if (!prox.getAttribute('aria-label')) prox.setAttribute('aria-label', 'Próximo slide'); }
+      var pontos = ctl.querySelector('.ds-carrossel-pontos');
+      if (pontos && !pontos.children.length) {
+        for (var k = 0; k < slides.length; k++) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'ds-carrossel-ponto';
+          b.setAttribute('aria-label', 'Ir para o slide ' + (k + 1) + ' de ' + slides.length);
+          pontos.appendChild(b);
+        }
+      }
+      ctl.hidden = slides.length < 2;
+    }
+    if (trilho) {
+      var espera = null;
+      trilho.addEventListener('scroll', function () {
+        if (espera) return;
+        espera = window.requestAnimationFrame(function () {
+          espera = null;
+          var largura = slides[0] ? slides[0].offsetWidth : 0;
+          if (largura) carrosselAtualizar(el, Math.round(trilho.scrollLeft / largura), true);
+        });
+      }, { passive: true });
+    }
+    carrosselAtualizar(el, 0, false);
+  }
+
+  function carrosselIr(el, indice, silencioso) {
+    prepararCarrossel(el);
+    var trilho = carrosselFilho(el, 'ds-carrossel-trilho');
+    var slides = carrosselSlides(el);
+    if (!trilho || indice < 0 || indice > slides.length - 1) return false;
+    var reduzir = false;
+    try { reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (err) { /* sem matchMedia */ }
+    carrosselAtualizar(el, indice, !silencioso);
+    trilho.scrollTo({ left: indice * slides[0].offsetWidth, behavior: reduzir ? 'auto' : 'smooth' });
+    return true;
+  }
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target.closest('.ds-carrossel-ant, .ds-carrossel-prox, .ds-carrossel-ponto') : null;
+    var el = alvo ? alvo.closest('.ds-carrossel') : null;
+    if (!alvo || !el || !el.hasAttribute('data-ds-carrossel') || alvo.disabled) return;
+    prepararCarrossel(el);
+    var atual = carrosselIndice(el);
+    if (alvo.classList.contains('ds-carrossel-ant')) carrosselIr(el, atual - 1, false);
+    else if (alvo.classList.contains('ds-carrossel-prox')) carrosselIr(el, atual + 1, false);
+    else {
+      var pontos = alvo.parentNode.querySelectorAll('.ds-carrossel-ponto');
+      for (var i = 0; i < pontos.length; i++) if (pontos[i] === alvo) carrosselIr(el, i, false);
+    }
+  });
+
+  function hidratarCarrosseis() {
+    var els = document.querySelectorAll('[data-ds-carrossel]');
+    for (var i = 0; i < els.length; i++) prepararCarrossel(els[i]);
+  }
+
   function iniciar() {
     hidratarRodapes();
     hidratarMenus();
@@ -972,6 +1111,7 @@
     hidratarFiltros();
     hidratarMascaras();
     hidratarAbas();
+    hidratarCarrosseis();
     sincronizarLogos();
   }
 
@@ -1002,4 +1142,6 @@
   window.KyvvoDS.mascara = mascara;
   window.KyvvoDS.abasSelecionar = abasSelecionar;
   window.KyvvoDS.abasAtiva = abasAtiva;
+  window.KyvvoDS.carrosselIr = carrosselIr;
+  window.KyvvoDS.carrosselIndice = function (el) { prepararCarrossel(el); return carrosselIndice(el); };
 })();

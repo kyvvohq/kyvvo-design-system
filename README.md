@@ -136,21 +136,40 @@ montar à mão: `KyvvoDS.rodapeLogado("Studio")` devolve o HTML interno.
 
 ### Rodapé de área não logada — `.ds-rodape-publico`
 
-Só CSS, o produto escreve a marcação: três colunas sob uma linha de borda —
-Instagram à esquerda, "nossos produtos" ao meio e, à direita, LGPD, Ajuda,
-Política de Privacidade e Termos de Uso. Até 720px as colunas empilham.
+O produto escreve a marcação: três colunas sob uma linha de borda — prévia do
+Instagram com o link embaixo, carrossel dos produtos Kyvvo (Studio, People,
+CRM) ao meio e, à direita, LGPD, Ajuda, Política de Privacidade e Termos de
+Uso. Uma barra em gradiente roxo→ciano sobre a linha de cima (a do
+sublinhado do logo) e cartões `accent-tint` ligam ao logo. Até 960px os links
+descem para uma linha própria; até 720px tudo empilha.
 
 ```html
 <footer class="ds-rodape-publico">
   <div class="ds-rodape-publico-conteudo">
-    <div class="ds-rodape-publico-social">
-      <h2 class="ds-rodape-publico-titulo">Redes sociais</h2>
-      <p class="ds-rodape-publico-texto">Siga a Kyvvo no <a href="…">Instagram</a></p>
+    <figure class="ds-rodape-publico-social">
+      <a class="ds-rodape-publico-imagem" href="https://www.instagram.com/somoskyvvo" tabindex="-1" aria-hidden="true"><img src="…" alt="Última publicação da Kyvvo no Instagram"></a>
+      <figcaption class="ds-rodape-publico-texto">Siga a Kyvvo no <a href="https://www.instagram.com/somoskyvvo">Instagram</a></figcaption>
+    </figure>
+    <div class="ds-rodape-publico-produtos">
+      <h2 class="ds-rodape-publico-titulo" id="rp-produtos">Nossos produtos</h2>
+      <div class="ds-carrossel" data-ds-carrossel aria-labelledby="rp-produtos">
+        <div class="ds-carrossel-trilho">
+          <div class="ds-carrossel-slide">
+            <div class="ds-rodape-publico-produto">
+              <h3 class="ds-rodape-publico-produto-nome"><a href="https://www.studio.kyvvo.com.br">Studio</a></h3>
+              <p class="ds-rodape-publico-produto-texto">…uma frase…</p>
+              <span class="ds-rodape-publico-produto-ir" aria-hidden="true">Conhecer &rarr;</span>
+            </div>
+          </div>
+          …um slide por produto…
+        </div>
+        <div class="ds-carrossel-controles">
+          <button type="button" class="ds-carrossel-btn ds-carrossel-ant"><svg aria-hidden="true">…</svg></button>
+          <div class="ds-carrossel-pontos"></div>
+          <button type="button" class="ds-carrossel-btn ds-carrossel-prox"><svg aria-hidden="true">…</svg></button>
+        </div>
+      </div>
     </div>
-    <nav class="ds-rodape-publico-produtos" aria-label="Nossos produtos">
-      <h2 class="ds-rodape-publico-titulo">Nossos produtos</h2>
-      <ul class="ds-rodape-publico-lista"><li><a href="…">Studio</a></li>…</ul>
-    </nav>
     <nav class="ds-rodape-publico-links" aria-label="Informações legais e ajuda">
       <ul class="ds-rodape-publico-lista">
         <li><a href="…">LGPD</a></li>
@@ -163,8 +182,30 @@ Política de Privacidade e Termos de Uso. Até 720px as colunas empilham.
 </footer>
 ```
 
-Os endereços de Instagram, produtos, LGPD e Ajuda são de cada produto — não
-deixe `href="#"` em produção. Em área logada use o `data-ds-rodape`.
+A imagem do Instagram é do produto: o design system não busca publicações
+(foto fixa, ou a última publicação via incorporação/API oficial do Instagram
+— cada produto decide como atualizar). Endereços: Instagram
+`https://www.instagram.com/somoskyvvo`; produtos `https://www.studio.kyvvo.com.br`,
+`https://www.people.kyvvo.com.br`, `https://www.crm.kyvvo.com.br`; LGPD e Ajuda
+ainda sem endereço definido — não deixe `href="#"` em produção. Em área logada
+use o `data-ds-rodape`.
+
+**Mudança de marcação em relação à 2.6.0/2.7.0:** o rodapé público trocou o
+`<p>` + `<ul>` de produtos por `<figure>` + carrossel. A marcação antiga
+segue renderizando (mesmas classes), só sem o novo visual.
+
+### Carrossel — `.ds-carrossel` + `data-ds-carrossel`
+
+Um slide por vez num trilho que rola na horizontal (toque + encaixe do
+navegador), com botões anterior/próximo e pontos. Marcação: `.ds-carrossel`
+com `.ds-carrossel-trilho` de `.ds-carrossel-slide` e `.ds-carrossel-controles`
+(`.ds-carrossel-ant`, `.ds-carrossel-pontos` vazio — o script cria um ponto por
+slide —, `.ds-carrossel-prox`). Nome acessível: `aria-label` ou
+`aria-labelledby`; o script completa `role`, `aria-roledescription` e "1 de N"
+nos slides. Sem rotação automática. Slides fora da vista ficam `inert` e
+`aria-hidden`. Evento: `ds-carrossel-alterar` (`detail = { indice, slide }`).
+Por código: `KyvvoDS.carrosselIr(el, indice, silencioso)` e
+`KyvvoDS.carrosselIndice(el)`.
 
 ### Menu lateral — `.ds-menu` + `data-ds-menu`
 
@@ -290,5 +331,5 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   atributo de tema, `:root` passou a ser claro)
 - **minor** — token novo ou componente novo (ex.: 2.6.0 — Menu, Agenda
   Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
-  2.7.0 — abas)
+  2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito)
 - **patch** — valor corrigido sem mudança de intenção visual
