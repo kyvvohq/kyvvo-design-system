@@ -1,10 +1,15 @@
 /* @kyvvohq/design-system — componentes compartilhados entre os produtos
- * Kyvvo (Studio, People). Ao contrário de tokens.css (só variáveis), aqui
+ * Kyvvo (Studio, People, CRM). Ao contrário de tokens.css (só variáveis), aqui
  * são classes prontas: marcação + estilo definidos num lugar só, pra
  * mudança de componente valer em todo produto no próximo deploy.
  *
  * Convenção: prefixo `.ds-`. Os componentes leem os tokens de tokens.css,
  * então respeitam tema claro/escuro sem regra a mais.
+ *
+ * Acréscimos da v2.6.0: rodapé com o nome do produto ("Kyvvo powered by" +
+ * logo), rodapé de área não logada, Menu lateral, linha do agendamento e
+ * visões Semana e Mês da agenda, botão, formulário, pesquisa, filtro
+ * dropdown, barra de filtros e menu de ações ("...").
  *
  * Alguns componentes têm um par em components.js que hidrata a marcação a
  * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
@@ -28,8 +33,12 @@
   font-size: 12px;
   color: var(--muted);
 }
-.ds-rodape img { height: 14px; width: auto; }
-
+/* Acréscimo da v2.6.0: a linha vira
+ * "© {ano} {produto} Kyvvo powered by {logo}. Todos os direitos reservados.",
+ * com o logo inline no corpo do texto. A altura de 20px casa o wordmark com
+ * o corpo de 12px (antes: 14px, logo ao lado do texto). */
+.ds-rodape img,
+.ds-rodape svg { height: 20px; width: auto; vertical-align: middle; margin: 0 1px 0 3px; }
 
 /* ---------- Agenda (Studio) ---------- */
 /* A view Dia da agenda (grade, cards, chips de profissional, rodapé de
@@ -198,6 +207,229 @@
   box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
 }
 
+/* ---- Agenda: avatar + cliente + serviço, menu "...", Semana e Mês (acréscimos da v2.6.0) ----
+ * Ficam antes dos tons por status de propósito: `.agenda-tom-*` vem depois e
+ * vence no fundo e na borda esquerda. Reaproveitam a régua de hora
+ * (`.agenda-rail`), o card (`.agenda-card`) e os tons da visão Dia. */
+
+/* O menu "..." agora fica dentro do card, então o conteúdo não reserva mais a folga da direita */
+.agenda-conteudo { padding-right: 12px; }
+
+/* Seletor de visão: Dia | Semana | Mês, à direita do topo */
+.agenda-visoes {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+.agenda-visao {
+  width: auto;
+  height: 28px;
+  margin: 0;
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.agenda-visao:hover { background: var(--surface-hover); color: var(--text); }
+.agenda-visao-ativa,
+.agenda-visao-ativa:hover { background: var(--accent-tint); color: var(--accent-strong); }
+
+/* Filtros: "Todos" e um chip por profissional. Chip ligado = aria-pressed="true" + .agenda-chip-ativo */
+.agenda-chip[aria-pressed="true"] { background: var(--accent-tint); border-color: transparent; color: var(--accent-strong); }
+
+/* Avatar do profissional: iniciais. Cor por profissional via --agenda-avatar-bg / --agenda-avatar-fg */
+.agenda-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--agenda-avatar-bg, var(--accent-tint));
+  color: var(--agenda-avatar-fg, var(--accent-strong));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Linha do agendamento: [avatar] [Nome Sobrenome] [serviço / vaga] [...] */
+.agenda-ag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 8px 8px 10px;
+  cursor: pointer;
+}
+.agenda-ag .agenda-card-cliente {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agenda-ag .agenda-card-servico { flex: 1 1 0; min-width: 0; }
+.agenda-ag .ds-acoes { flex: none; margin-left: auto; }
+/* Dois ou mais profissionais no mesmo horário: lado a lado, na mesma largura */
+.agenda-multi > .agenda-card-h { flex: 1 1 0; width: auto; }
+
+/* Horário atual na visão Dia: linha maior que as demais */
+.agenda-linha-agora { min-height: 104px; }
+.agenda-linha-agora .agenda-rail-hora { font-size: 14px; }
+.agenda-linha-agora .agenda-ag { padding-block: 16px; }
+.agenda-linha-agora .agenda-card-cliente { font-size: 15px; }
+.agenda-linha-agora .agenda-card-servico { font-size: 14px; }
+
+/* Número do dia (cabeçalho da semana e células do mês); hoje leva o tint de acento */
+.agenda-dia-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.agenda-dia-num-hoje { background: var(--accent-tint); color: var(--accent-strong); }
+
+/* Card compacto para semana e mês */
+.agenda-card-s .agenda-ag {
+  gap: 5px;
+  padding: 3px 2px 3px 5px;
+}
+.agenda-card-s .agenda-avatar { width: 20px; height: 20px; font-size: 8px; }
+.agenda-card-s .agenda-card-cliente { font-size: 11px; }
+.agenda-card-s .agenda-card-servico { font-size: 10px; }
+.agenda-card-s { border-radius: 8px; }
+.agenda-mais {
+  display: block;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+
+/* Semana: régua de hora + N colunas de dia. O produto informa quantos dias
+ * aparecem em --agenda-dias (dias sem expediente não entram na marcação).
+ * Os divisores são o "gap" de 1px sobre o fundo `border`, então valem para
+ * qualquer número de colunas. Abaixo de ~780px a grade rola na horizontal. */
+.agenda-semana {
+  display: grid;
+  grid-template-columns: 56px repeat(var(--agenda-dias, 7), minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.agenda-semana-canto,
+.agenda-semana-cab { background: var(--surface-muted); }
+.agenda-semana-cab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  font-size: 12px;
+  color: var(--muted-strong);
+  text-transform: capitalize;
+}
+.agenda-semana-cab .agenda-dia-num { font-family: var(--font-display); font-size: 16px; }
+.agenda-semana .agenda-rail { border: 0; padding-right: 10px; }
+.agenda-semana-celula {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 4px;
+  background: var(--card);
+}
+/* Hoje: cabeçalho com tint e a coluna contornada dos lados (sem fundo, para os tons de status não mudarem de cor) */
+.agenda-semana-cab-hoje { background: var(--accent-tint); }
+.agenda-semana-cab-hoje > span:first-child { color: var(--accent-strong); font-weight: 600; }
+.agenda-semana-celula-hoje { box-shadow: inset 2px 0 0 rgba(var(--accent-rgb), 0.45), inset -2px 0 0 rgba(var(--accent-rgb), 0.45); }
+/* Hora atual: a faixa inteira fica mais alta, como na visão Dia */
+.agenda-semana .agenda-rail-agora { background: rgba(var(--accent-rgb), 0.1); }
+.agenda-semana .agenda-rail-agora .agenda-rail-hora { color: var(--accent-strong); font-weight: 700; font-size: 14px; }
+.agenda-semana .agenda-linha-alta { min-height: 104px; }
+/* Card da semana em duas linhas: avatar + cliente + "...", e o serviço embaixo */
+.agenda-semana .agenda-card-s .agenda-ag {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 5px;
+  row-gap: 0;
+}
+.agenda-semana .agenda-card-s .agenda-avatar { grid-column: 1; grid-row: 1; }
+.agenda-semana .agenda-card-s .agenda-card-cliente { grid-column: 2; grid-row: 1; }
+.agenda-semana .agenda-card-s .ds-acoes { grid-column: 3; grid-row: 1; margin-left: 0; }
+.agenda-semana .agenda-card-s .agenda-card-servico { grid-column: 2 / 4; grid-row: 2; flex: none; }
+
+/* Mês: cabeçalho de dias da semana + células de dia (grade plana de N colunas) */
+.agenda-mes {
+  display: grid;
+  grid-template-columns: repeat(var(--agenda-dias, 7), minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.agenda-mes-cab {
+  padding: 8px 4px;
+  background: var(--surface-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted-strong);
+  text-transform: capitalize;
+}
+.agenda-mes-celula {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 6px;
+  background: var(--card);
+  cursor: pointer;
+}
+.agenda-mes-celula:hover { background: var(--surface-hover); }
+.agenda-mes-celula .agenda-dia-num { align-self: flex-start; }
+.agenda-mes-fora,
+.agenda-mes-fora:hover { background: var(--surface-muted); }
+.agenda-mes-fora .agenda-dia-num { color: var(--muted-strong); font-weight: 600; }
+/* Hoje: célula maior que as demais (a semana inteira cresce junto) e contornada */
+.agenda-mes-celula-hoje { min-height: 156px; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.agenda-visao:focus-visible,
+.agenda-nav-btn:focus-visible,
+.agenda-nav-hoje:focus-visible,
+.agenda-chip:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.agenda-mes-celula:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+
+@media (max-width: 720px) {
+  .agenda-visoes { margin-left: 0; }
+  .agenda-mes-celula { min-height: 72px; padding: 4px; }
+  .agenda-mes-celula-hoje { min-height: 104px; }
+  /* Sem espaço para o "..." na célula do mês estreito: as ações ficam na visão Dia */
+  .agenda-mes .agenda-card-s .ds-acoes { display: none; }
+}
+
 /* Tons por status — borda esquerda + fundo sutil. O texto fica na cor
    normal (tintar deixava ilegível no claro). */
 .agenda-tom-ok { border-left-color: var(--success); background: var(--success-bg); }
@@ -210,4 +442,557 @@
   .agenda-card-h-linha { flex-wrap: wrap; }
   .agenda-card-meta { margin-left: 0; width: 100%; }
   .agenda-multi { flex-direction: column; }
+}
+
+/* ---------- Menu lateral ---------- */
+/* Acréscimo da v2.6.0. Navegação
+ * lateral com itens, grupos que expandem em submenus e um botão "‹" que
+ * recolhe o menu para só os ícones. O comportamento (recolher, expandir
+ * grupos) vem do components.js; sem ele, o CSS ainda lê o estado de
+ * `.ds-menu-recolhido` e de `aria-expanded` nos grupos. */
+.ds-menu {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 248px;
+  padding: var(--space-3);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  color: var(--muted-strong);
+  font-size: 14px;
+  transition: width 0.18s ease;
+}
+.ds-menu-recolhido { width: 72px; }
+.ds-menu ul { list-style: none; margin: 0; padding: 0; }
+.ds-menu-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-1) 0 var(--space-3);
+}
+.ds-menu-recolhido .ds-menu-topo { justify-content: center; padding: 0; }
+.ds-menu-marca { display: inline-flex; align-items: center; min-width: 0; }
+.ds-menu-marca img,
+.ds-menu-marca svg { height: 28px; width: auto; }
+.ds-menu-recolhido .ds-menu-marca { display: none; }
+.ds-menu-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-menu-toggle:hover { background: var(--surface-hover); color: var(--text); }
+.ds-menu-toggle svg { width: 20px; height: 20px; transition: transform 0.18s ease; }
+.ds-menu-recolhido .ds-menu-toggle svg { transform: rotate(180deg); }
+.ds-menu-lista { display: flex; flex-direction: column; gap: var(--space-1); }
+.ds-menu-link {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--muted-strong);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ds-menu-link:hover { background: var(--surface-hover); color: var(--text); }
+.ds-menu-link-ativo,
+.ds-menu-link-ativo:hover { background: var(--accent-tint); color: var(--accent-strong); }
+.ds-menu-icone { flex: none; display: inline-flex; width: 20px; height: 20px; }
+.ds-menu-icone svg { width: 20px; height: 20px; }
+.ds-menu-rotulo { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-menu-seta { flex: none; display: inline-flex; width: 16px; height: 16px; transition: transform 0.18s ease; }
+.ds-menu-seta svg { width: 16px; height: 16px; }
+.ds-menu-grupo-botao[aria-expanded="true"] .ds-menu-seta { transform: rotate(180deg); }
+
+/* Submenu: aparece com o grupo aberto (aria-expanded="true") */
+.ds-menu-sub { display: none; flex-direction: column; gap: 2px; margin-top: var(--space-1); }
+.ds-menu-grupo-botao[aria-expanded="true"] + .ds-menu-sub { display: flex; }
+.ds-menu-sublink {
+  display: block;
+  padding: 8px var(--space-3) 8px 44px;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+}
+.ds-menu-sublink:hover { background: var(--surface-hover); color: var(--text); }
+.ds-menu-sublink-ativo,
+.ds-menu-sublink-ativo:hover { background: var(--accent-tint); color: var(--accent-strong); font-weight: 600; }
+
+/* Recolhido: só os ícones. O rótulo continua no DOM (nome acessível do
+ * link) e o script põe o `title` de cada item; submenus e setas somem. */
+.ds-menu-recolhido .ds-menu-lista { align-items: center; }
+.ds-menu-recolhido .ds-menu-link { justify-content: center; width: 48px; padding: 0; }
+.ds-menu-recolhido .ds-menu-rotulo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.ds-menu-recolhido .ds-menu-seta,
+.ds-menu.ds-menu-recolhido .ds-menu-grupo-botao + .ds-menu-sub { display: none; }
+
+.ds-menu-link:focus-visible,
+.ds-menu-sublink:focus-visible,
+.ds-menu-toggle:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-menu,
+  .ds-menu-toggle svg,
+  .ds-menu-seta { transition: none; }
+}
+
+/* ======================================================================
+ * Acréscimos da v2.6.0: Botão,
+ * Formulário, Barra de pesquisa, Filtro dropdown, Barra de filtros,
+ * Menu de ações ("...") e Máscaras. Prefixo `.ds-`, só tokens.
+ * Tinta sobre preenchimento sólido (accent-dark, danger): `card` no claro
+ * (5.96:1 sobre accent-dark) e `bg` no escuro (5.51:1); no perigo, `text`
+ * no claro (5.01:1) e `bg` no escuro (6.51:1).
+ * ====================================================================== */
+
+/* ---------- Botão ---------- */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: 600 14px/1 var(--font-ui);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ds-btn svg { width: 18px; height: 18px; flex: none; }
+.ds-btn-primario { background: var(--accent-dark); color: var(--card); }
+.ds-btn-primario:hover { background: var(--accent-hover); }
+.ds-btn-secundario { background: var(--card); border-color: var(--border-strong); color: var(--text); }
+.ds-btn-secundario:hover { background: var(--surface-hover); }
+.ds-btn-ghost { background: transparent; color: var(--accent-strong); }
+.ds-btn-ghost:hover { background: var(--accent-tint); }
+.ds-btn-perigo { background: var(--danger); color: var(--text); }
+.ds-btn-perigo:hover { filter: brightness(0.94); }
+:root[data-theme="dark"] .ds-btn-primario { color: var(--bg); }
+:root[data-theme="dark"] .ds-btn-perigo { color: var(--bg); }
+:root[data-theme="dark"] .ds-btn:disabled,
+:root[data-theme="dark"] .ds-btn[aria-disabled="true"] { color: var(--text-faint); }
+.ds-btn-sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: var(--radius-sm); }
+.ds-btn-lg { height: 48px; padding: 0 22px; font-size: 15px; }
+.ds-btn-icone { width: 40px; padding: 0; }
+.ds-btn-icone.ds-btn-sm { width: 32px; }
+.ds-btn-icone.ds-btn-lg { width: 48px; }
+.ds-btn-bloco { display: flex; width: 100%; }
+.ds-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-btn:disabled,
+.ds-btn[aria-disabled="true"],
+.ds-btn:disabled:hover,
+.ds-btn[aria-disabled="true"]:hover {
+  background: var(--surface-muted);
+  border-color: var(--border);
+  color: var(--text-faint);
+  filter: none;
+  cursor: not-allowed;
+}
+/* Carregando: mantém a largura, troca o ícone por um giro e ignora cliques */
+.ds-btn[aria-busy="true"] { pointer-events: none; }
+.ds-btn[aria-busy="true"]::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: ds-giro 0.8s linear infinite;
+}
+.ds-btn[aria-busy="true"] > svg { display: none; }
+@keyframes ds-giro { to { transform: rotate(360deg); } }
+.ds-btn-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* ---------- Formulário ---------- */
+.ds-form { display: flex; flex-direction: column; gap: 20px; }
+.ds-form-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ds-form-grade > .ds-campo-largo { grid-column: 1 / -1; }
+.ds-form-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+.ds-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ds-rotulo { font-size: 13px; font-weight: 600; color: var(--text); }
+.ds-rotulo-opcional { font-weight: 400; color: var(--muted-strong); }
+.ds-input,
+.ds-select select,
+.ds-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 400 14px/1.4 var(--font-ui);
+}
+.ds-textarea { height: auto; min-height: 88px; padding: 10px 12px; resize: vertical; }
+.ds-input::placeholder,
+.ds-textarea::placeholder { color: var(--text-faint); }
+.ds-input:hover,
+.ds-select select:hover,
+.ds-textarea:hover { border-color: var(--muted); }
+.ds-input:focus,
+.ds-select select:focus,
+.ds-textarea:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25);
+}
+.ds-input[aria-invalid="true"],
+.ds-select select[aria-invalid="true"],
+.ds-textarea[aria-invalid="true"] { border-color: var(--danger); }
+.ds-input[aria-invalid="true"]:focus,
+.ds-select select[aria-invalid="true"]:focus,
+.ds-textarea[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.25); }
+.ds-input:disabled,
+.ds-select select:disabled,
+.ds-textarea:disabled { background: var(--surface-muted); border-color: var(--border); color: var(--text-faint); cursor: not-allowed; }
+.ds-select { position: relative; }
+.ds-select select { padding-right: 36px; appearance: none; -webkit-appearance: none; cursor: pointer; }
+.ds-select > svg { position: absolute; top: 50%; right: 12px; width: 16px; height: 16px; margin-top: -8px; color: var(--muted-strong); pointer-events: none; }
+.ds-campo-ajuda { font-size: 12px; color: var(--muted-strong); }
+.ds-campo-erro {
+  --ds-sobre-perigo: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+:root[data-theme="dark"] .ds-campo-erro { --ds-sobre-perigo: var(--bg); }
+.ds-campo-erro::before {
+  content: "!";
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: var(--ds-sobre-perigo);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ds-campo-erro[hidden] { display: none; }
+.ds-check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text); cursor: pointer; }
+.ds-check input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--accent-dark); cursor: pointer; }
+.ds-check input:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+@media (max-width: 560px) {
+  .ds-form-grade { grid-template-columns: minmax(0, 1fr); }
+  .ds-form-acoes .ds-btn { flex: 1 1 auto; }
+}
+
+/* ---------- Barra de pesquisa ---------- */
+.ds-pesquisa { position: relative; display: flex; align-items: center; min-width: 0; }
+.ds-pesquisa-icone { position: absolute; left: 12px; width: 18px; height: 18px; color: var(--muted-strong); pointer-events: none; }
+.ds-pesquisa-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 40px 0 38px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 400 14px/1.4 var(--font-ui);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ds-pesquisa-input::-webkit-search-cancel-button,
+.ds-pesquisa-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.ds-pesquisa-input::placeholder { color: var(--text-faint); }
+.ds-pesquisa-input:hover { border-color: var(--muted); }
+.ds-pesquisa-input:focus { outline: none; border-color: var(--accent-dark); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25); }
+.ds-pesquisa-limpar {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-pesquisa-limpar svg { width: 16px; height: 16px; }
+.ds-pesquisa-limpar:hover { background: var(--surface-hover); color: var(--text); }
+.ds-pesquisa-limpar:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.ds-pesquisa-limpar[hidden] { display: none; }
+
+/* ---------- Filtro dropdown ---------- */
+.ds-dropdown { position: relative; display: inline-block; }
+.ds-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 10px 0 14px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 600 14px/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ds-dropdown-btn:hover { background: var(--surface-hover); }
+.ds-dropdown-btn[aria-expanded="true"] { border-color: var(--accent-dark); }
+.ds-dropdown-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-dropdown-ativo .ds-dropdown-btn { background: var(--accent-tint); border-color: transparent; color: var(--accent-strong); }
+.ds-dropdown-contagem {
+  --ds-sobre-cor: var(--card);
+  min-width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent-dark);
+  color: var(--ds-sobre-cor);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+:root[data-theme="dark"] .ds-dropdown-contagem { --ds-sobre-cor: var(--bg); }
+.ds-dropdown-contagem[hidden] { display: none; }
+.ds-dropdown-seta { display: inline-flex; color: var(--muted-strong); }
+.ds-dropdown-ativo .ds-dropdown-seta { color: var(--accent-strong); }
+.ds-dropdown-seta svg { width: 16px; height: 16px; }
+.ds-dropdown-btn[aria-expanded="true"] .ds-dropdown-seta svg { transform: rotate(180deg); }
+.ds-dropdown-painel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  min-width: 100%;
+  width: max-content;
+  max-width: 320px;
+  max-height: 320px;
+  overflow: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-dropdown-painel[hidden] { display: none; }
+.ds-dropdown-lista { margin: 0; padding: 0; list-style: none; }
+.ds-dropdown-opcao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.ds-dropdown-opcao:hover,
+.ds-dropdown-opcao[data-foco] { background: var(--surface-hover); }
+.ds-dropdown-opcao:focus { outline: none; }
+.ds-dropdown-opcao:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+.ds-dropdown-marca {
+  --ds-sobre-cor: var(--card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--muted);
+  border-radius: 4px;
+  color: transparent;
+}
+:root[data-theme="dark"] .ds-dropdown-marca { --ds-sobre-cor: var(--bg); }
+.ds-dropdown-marca svg { width: 12px; height: 12px; }
+.ds-dropdown-opcao[aria-selected="true"] .ds-dropdown-marca { background: var(--accent-dark); border-color: var(--accent-dark); color: var(--ds-sobre-cor); }
+/* Escolha única: sem caixa, só o visto à esquerda no item marcado */
+.ds-dropdown[data-ds-dropdown="unico"] .ds-dropdown-marca { border-color: transparent; background: transparent; }
+.ds-dropdown[data-ds-dropdown="unico"] .ds-dropdown-opcao[aria-selected="true"] .ds-dropdown-marca { background: transparent; color: var(--accent-strong); }
+.ds-dropdown[data-ds-dropdown="unico"] .ds-dropdown-opcao[aria-selected="true"] { color: var(--accent-strong); font-weight: 600; }
+.ds-dropdown-rodape { display: flex; justify-content: flex-end; margin: 4px -6px -6px; padding: 6px; border-top: 1px solid var(--border); }
+
+/* ---------- Barra de filtros ---------- */
+.ds-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.ds-filtros .ds-pesquisa { flex: 1 1 240px; max-width: 360px; }
+.ds-filtros-fim { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.ds-filtros-resumo { font-size: 13px; color: var(--muted-strong); white-space: nowrap; }
+.ds-filtros-limpar[hidden] { display: none; }
+
+/* ---------- Menu de ações ("...") ---------- */
+/* O menu é `position: fixed`, posicionado pelo components.js a partir do botão:
+ * assim ele não é cortado por células com overflow (semana, mês, tabelas). */
+.ds-acoes { display: inline-flex; }
+.ds-acoes-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-acoes-btn svg { width: 18px; height: 18px; }
+.ds-acoes-btn:hover,
+.ds-acoes-btn[aria-expanded="true"] { background: var(--surface-hover); color: var(--text); }
+.ds-acoes-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.agenda-card-s .ds-acoes-btn { width: 22px; height: 22px; }
+.agenda-card-s .ds-acoes-btn svg { width: 16px; height: 16px; }
+.ds-acoes-menu {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  min-width: 184px;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-acoes-menu[hidden] { display: none; }
+.ds-acoes-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0 10px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: 400 14px/1 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.ds-acoes-item svg { width: 16px; height: 16px; flex: none; color: var(--muted-strong); }
+.ds-acoes-item:hover,
+.ds-acoes-item:focus-visible { background: var(--surface-hover); outline: none; }
+.ds-acoes-item:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-dark); }
+.ds-acoes-item-perigo:hover,
+.ds-acoes-item-perigo:focus-visible { background: var(--danger-bg); }
+.ds-acoes-item-perigo svg { color: var(--text); }
+.ds-acoes-separador { height: 1px; margin: 4px 0; background: var(--border); border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-btn[aria-busy="true"]::before { animation: none; }
+}
+
+/* ---------- Rodapé de área não logada ---------- */
+/* Acréscimo da v2.6.0. Só CSS: o produto
+ * escreve a marcação (três colunas: Instagram, produtos e links legais). */
+.ds-rodape-publico {
+  padding: var(--space-6) var(--space-5);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.ds-rodape-publico-conteudo {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-7);
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-strong);
+}
+.ds-rodape-publico-titulo {
+  margin: 0 0 12px;
+  font: 600 13px/1.2 var(--font-ui);
+  color: var(--text);
+}
+.ds-rodape-publico-texto { margin: 0; line-height: 1.5; color: var(--muted-strong); }
+.ds-rodape-publico-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-rodape-publico-links { justify-self: end; }
+.ds-rodape-publico a {
+  color: var(--muted-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.ds-rodape-publico a:hover { color: var(--text); }
+.ds-rodape-publico a:focus-visible {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+@media (max-width: 720px) {
+  .ds-rodape-publico { padding: var(--space-5) var(--space-4); }
+  .ds-rodape-publico-conteudo { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+  .ds-rodape-publico-links { justify-self: start; }
 }
