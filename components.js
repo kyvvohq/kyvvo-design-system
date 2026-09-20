@@ -18,6 +18,7 @@
  * no rodapé ("Kyvvo powered by" + logo), o Menu lateral, o menu de ações
  * ("..."), o filtro dropdown, a barra de pesquisa, a barra de filtros e as
  * máscaras de campo (data-ds-mascara).
+ * Acréscimo da v2.7.0: as abas (data-ds-abas).
  */
 (function () {
   'use strict';
@@ -823,6 +824,146 @@
     formulario: validarFormulario
   };
 
+  // ---- Abas ----
+  // <div class="ds-abas" data-ds-abas> com uma .ds-abas-lista (filha direta,
+  // role="tablist") de botões .ds-aba (role="tab", aria-controls = id do
+  // painel) e um .ds-abas-painel (role="tabpanel") por aba. A marcação já
+  // nasce no estado inicial (aria-selected na aba ativa, hidden nos outros
+  // painéis); o script mantém isso e liga clique e teclado.
+
+  function abasFilhos(pai, classe) {
+    var lista = [];
+    if (!pai) return lista;
+    for (var i = 0; i < pai.children.length; i++) {
+      if (pai.children[i].classList.contains(classe)) lista.push(pai.children[i]);
+    }
+    return lista;
+  }
+
+  function abasLista(el) { return abasFilhos(el, 'ds-abas-lista')[0] || null; }
+  function abasTabs(el) { return abasFilhos(abasLista(el), 'ds-aba'); }
+
+  function abaPainel(aba) {
+    var id = aba.getAttribute('aria-controls');
+    return id ? document.getElementById(id) : null;
+  }
+
+  function abasHabilitadas(el) {
+    return abasTabs(el).filter(function (t) { return !t.disabled && t.getAttribute('aria-disabled') !== 'true'; });
+  }
+
+  function abasAtivar(el, aba, foco, silencioso) {
+    var tabs = abasTabs(el);
+    var anterior = null;
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('aria-selected') === 'true') anterior = tabs[i];
+    }
+    var indice = -1;
+    for (var j = 0; j < tabs.length; j++) {
+      var sel = tabs[j] === aba;
+      if (sel) indice = j;
+      tabs[j].setAttribute('aria-selected', sel ? 'true' : 'false');
+      tabs[j].tabIndex = sel ? 0 : -1;
+      var painel = abaPainel(tabs[j]);
+      if (painel) painel.hidden = !sel;
+    }
+    var lista = aba.parentNode;
+    var esq = aba.offsetLeft;
+    var dir = esq + aba.offsetWidth;
+    if (esq < lista.scrollLeft) lista.scrollLeft = Math.max(0, esq - 8);
+    else if (dir > lista.scrollLeft + lista.clientWidth) lista.scrollLeft = dir - lista.clientWidth + 8;
+    if (foco) aba.focus();
+    if (anterior !== aba && !silencioso) {
+      var p = abaPainel(aba);
+      el.dispatchEvent(new CustomEvent('ds-abas-alterar', {
+        bubbles: true,
+        detail: { aba: aba, painel: p, id: aba.getAttribute('aria-controls'), indice: indice }
+      }));
+    }
+  }
+
+  function prepararAbas(el) {
+    if (el.getAttribute('data-ds-preparado') === 'abas') return;
+    el.setAttribute('data-ds-preparado', 'abas');
+    el.classList.add('ds-abas');
+    var lista = abasLista(el);
+    if (lista && !lista.getAttribute('role')) lista.setAttribute('role', 'tablist');
+    var tabs = abasTabs(el);
+    var inicial = null;
+    for (var i = 0; i < tabs.length; i++) {
+      if (!tabs[i].getAttribute('role')) tabs[i].setAttribute('role', 'tab');
+      if (!tabs[i].getAttribute('type')) tabs[i].setAttribute('type', 'button');
+      var p = abaPainel(tabs[i]);
+      if (p && !p.getAttribute('role')) p.setAttribute('role', 'tabpanel');
+      if (p && !p.getAttribute('aria-labelledby') && tabs[i].id) p.setAttribute('aria-labelledby', tabs[i].id);
+      if (p && !p.hasAttribute('tabindex')) p.tabIndex = 0;
+      if (!inicial && tabs[i].getAttribute('aria-selected') === 'true' && !tabs[i].disabled) inicial = tabs[i];
+    }
+    if (!inicial) inicial = abasHabilitadas(el)[0] || null;
+    if (inicial) abasAtivar(el, inicial, false, true);
+  }
+
+  function abasSelecionar(el, alvo, silencioso) {
+    prepararAbas(el);
+    var tabs = abasTabs(el);
+    var aba = null;
+    if (typeof alvo === 'number') aba = tabs[alvo] || null;
+    else {
+      for (var i = 0; i < tabs.length; i++) {
+        if (tabs[i].id === alvo || tabs[i].getAttribute('aria-controls') === alvo) aba = tabs[i];
+      }
+    }
+    if (!aba || aba.disabled || aba.getAttribute('aria-disabled') === 'true') return false;
+    abasAtivar(el, aba, false, !!silencioso);
+    return true;
+  }
+
+  function abasAtiva(el) {
+    prepararAbas(el);
+    var tabs = abasTabs(el);
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('aria-selected') === 'true') return tabs[i];
+    }
+    return null;
+  }
+
+  function abasDoAlvo(alvo) {
+    var aba = alvo && alvo.closest ? alvo.closest('.ds-aba') : null;
+    var el = aba ? aba.closest('.ds-abas') : null;
+    if (!aba || !el || !el.hasAttribute('data-ds-abas') || aba.parentNode !== abasLista(el)) return null;
+    prepararAbas(el);
+    return { el: el, aba: aba };
+  }
+
+  document.addEventListener('click', function (e) {
+    var r = abasDoAlvo(e.target);
+    if (!r || r.aba.disabled || r.aba.getAttribute('aria-disabled') === 'true') return;
+    abasAtivar(r.el, r.aba, false, false);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var r = abasDoAlvo(e.target);
+    if (!r) return;
+    var tecla = e.key;
+    if (tecla !== 'ArrowLeft' && tecla !== 'ArrowRight' && tecla !== 'Home' && tecla !== 'End') return;
+    var lista = abasHabilitadas(r.el);
+    if (!lista.length) return;
+    var pos = lista.indexOf(r.aba);
+    var novo;
+    if (tecla === 'Home') novo = 0;
+    else if (tecla === 'End') novo = lista.length - 1;
+    else if (tecla === 'ArrowRight') novo = (pos + 1) % lista.length;
+    else novo = (pos - 1 + lista.length) % lista.length;
+    e.preventDefault();
+    if (r.el.getAttribute('data-ds-abas') === 'manual') lista[novo].focus();
+    else abasAtivar(r.el, lista[novo], true, false);
+  });
+
+  function hidratarAbas() {
+    var els = document.querySelectorAll('[data-ds-abas]');
+    for (var i = 0; i < els.length; i++) prepararAbas(els[i]);
+  }
+
   function iniciar() {
     hidratarRodapes();
     hidratarMenus();
@@ -830,6 +971,7 @@
     hidratarPesquisas();
     hidratarFiltros();
     hidratarMascaras();
+    hidratarAbas();
     sincronizarLogos();
   }
 
@@ -858,4 +1000,6 @@
   window.KyvvoDS.filtrosEstado = filtrosEstado;
   window.KyvvoDS.filtrosLimpar = filtrosLimpar;
   window.KyvvoDS.mascara = mascara;
+  window.KyvvoDS.abasSelecionar = abasSelecionar;
+  window.KyvvoDS.abasAtiva = abasAtiva;
 })();
