@@ -177,6 +177,21 @@ expandem em submenus (`.ds-menu-grupo` > `.ds-menu-grupo-botao` +
 código: `KyvvoDS.menuAlternar(nav, true)`. Evento: `ds-menu-alternar`
 (`detail.recolhido`). O pacote não traz ícones — o produto fornece os SVGs.
 
+### Abas — `.ds-abas` + `data-ds-abas`
+
+Abas para dividir o conteúdo de uma tela de submenu (Dados, Histórico,
+Financeiro). `<div class="ds-abas" data-ds-abas>` com uma `.ds-abas-lista`
+(`role="tablist"`) de botões `.ds-aba` (`role="tab"`, `aria-controls` =
+`id` do painel) e um `.ds-abas-painel` (`role="tabpanel"`) por aba. Escreva
+a marcação já no estado inicial: `aria-selected="true"` na aba ativa e
+`hidden` nos outros painéis. Opcionais: ícone, contagem
+(`.ds-aba-contagem`) e aba `disabled`. Clique e ← → Home End trocam a aba
+(`data-ds-abas="manual"`: o foco só se move, Enter/Espaço ativam). Evento:
+`ds-abas-alterar` (`detail = { aba, painel, id, indice }`). Por código:
+`KyvvoDS.abasSelecionar(el, indiceOuId, silencioso)` e
+`KyvvoDS.abasAtiva(el)`. Em espaço estreito a lista rola na horizontal.
+Abas dividem o conteúdo de **uma** tela; para navegar entre telas use o Menu.
+
 ### Agenda — Dia, Semana e Mês
 
 `components.css` traz o visual da agenda com **três visões no mesmo
@@ -274,5 +289,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
 - **major** — token removido/renomeado, ou mudança de mecanismo (ex: v1→v2:
   atributo de tema, `:root` passou a ser claro)
 - **minor** — token novo ou componente novo (ex.: 2.6.0 — Menu, Agenda
-  Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras)
+  Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
+  2.7.0 — abas)
 - **patch** — valor corrigido sem mudança de intenção visual
