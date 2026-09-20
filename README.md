@@ -1,7 +1,7 @@
 # @kyvvohq/design-system
 
 Tokens, assets de marca e **componentes** compartilhados entre os produtos
-Kyvvo (Studio, People). A ideia: o que é comum vive aqui, mudança num lugar
+Kyvvo (Studio, People, CRM). A ideia: o que é comum vive aqui, mudança num lugar
 só vale nos dois produtos no próximo deploy.
 
 ## O que tem aqui
@@ -107,7 +107,7 @@ Linke `tokens.css` **antes** do CSS próprio da página, sempre a partir de
 
 `components.css` (estilo) + `components.js` (marcação/comportamento) — o que
 é igual entre as telas vive aqui, não copiado em cada uma. Mudar o
-componente aqui e mergear na main = todas as telas dos dois produtos mudam
+componente aqui e mergear na main = todas as telas dos produtos mudam
 juntas em segundos, sem editar tela nenhuma e sem deploy de produto.
 
 ```html
@@ -122,29 +122,130 @@ O `components.js` é script clássico (sem módulo): expõe `window.KyvvoDS` e,
 no `DOMContentLoaded`, hidrata elementos marcados com `data-ds-*`. A ordem
 em relação ao JS do produto (`app.js`/`shell.js`) não importa.
 
-### `data-ds-rodape` — rodapé de área logada
+### Rodapé de área logada — `data-ds-rodape`
 
 ```html
-<footer data-ds-rodape></footer>
+<footer data-ds-rodape data-ds-produto="Studio"></footer>
 ```
 
-Vira: linha de borda no topo, logo (troca com o tema via `data-ds-logo`) +
-"© <ano corrente> Kyvvo Tecnologia. Todos os direitos reservados." O ano é
-dinâmico — nunca precisa bumpar. Também dá pra montar à mão:
-`KyvvoDS.rodapeLogado()` devolve o HTML interno.
+Vira: linha de borda no topo e "© <ano corrente> {produto} Kyvvo powered by
+{logo}. Todos os direitos reservados." O logo (o segundo "Kyvvo") troca com o
+tema via `data-ds-logo`. O ano é dinâmico — nunca precisa bumpar. Sem
+`data-ds-produto` a linha começa em "© <ano> Kyvvo powered by". Também dá pra
+montar à mão: `KyvvoDS.rodapeLogado("Studio")` devolve o HTML interno.
 
-Mudou o texto/logo/estilo do rodapé? Edita `components.css`/`.js` aqui e
-mergeia na main — todas as telas logadas de Studio e People mudam juntas.
+### Rodapé de área não logada — `.ds-rodape-publico`
 
-### Agenda (Studio)
+Só CSS, o produto escreve a marcação: três colunas sob uma linha de borda —
+Instagram à esquerda, "nossos produtos" ao meio e, à direita, LGPD, Ajuda,
+Política de Privacidade e Termos de Uso. Até 720px as colunas empilham.
 
-`components.css` também traz o visual da **view Dia da agenda** — grade,
-cards (horizontal e compactos lado a lado), chips de filtro por
-profissional, régua de hora, rodapé de resumo, tons por status. Classes
-`.agenda-*` / `.grade-resumo` (ainda sem prefixo `.ds-`, rename futuro). O
-`app.js` do painel só monta a marcação com essas classes — mexer no visual
-da agenda inteira é só aqui, mergeado na main. Studio-only por ora (o People
-não tem agenda).
+```html
+<footer class="ds-rodape-publico">
+  <div class="ds-rodape-publico-conteudo">
+    <div class="ds-rodape-publico-social">
+      <h2 class="ds-rodape-publico-titulo">Redes sociais</h2>
+      <p class="ds-rodape-publico-texto">Siga a Kyvvo no <a href="…">Instagram</a></p>
+    </div>
+    <nav class="ds-rodape-publico-produtos" aria-label="Nossos produtos">
+      <h2 class="ds-rodape-publico-titulo">Nossos produtos</h2>
+      <ul class="ds-rodape-publico-lista"><li><a href="…">Studio</a></li>…</ul>
+    </nav>
+    <nav class="ds-rodape-publico-links" aria-label="Informações legais e ajuda">
+      <ul class="ds-rodape-publico-lista">
+        <li><a href="…">LGPD</a></li>
+        <li><a href="…">Ajuda</a></li>
+        <li><a href="https://studio.kyvvo.com.br/privacidade.html">Política de Privacidade</a></li>
+        <li><a href="https://studio.kyvvo.com.br/termos.html">Termos de Uso</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+```
+
+Os endereços de Instagram, produtos, LGPD e Ajuda são de cada produto — não
+deixe `href="#"` em produção. Em área logada use o `data-ds-rodape`.
+
+### Menu lateral — `.ds-menu` + `data-ds-menu`
+
+`<nav class="ds-menu" data-ds-menu>` com itens (`.ds-menu-link`), grupos que
+expandem em submenus (`.ds-menu-grupo` > `.ds-menu-grupo-botao` +
+`.ds-menu-sub`) e o botão ‹ (`.ds-menu-toggle`) que recolhe o menu pra só os
+ícones (72px; 248px aberto). Todo item leva o rótulo em `.ds-menu-rotulo`
+(vira o nome acessível no modo recolhido). Item atual: `.ds-menu-link-ativo` +
+`aria-current="page"`. Recolhido por padrão: `data-ds-menu-recolhido`; por
+código: `KyvvoDS.menuAlternar(nav, true)`. Evento: `ds-menu-alternar`
+(`detail.recolhido`). O pacote não traz ícones — o produto fornece os SVGs.
+
+### Agenda — Dia, Semana e Mês
+
+`components.css` traz o visual da agenda com **três visões no mesmo
+componente**: topo comum (‹ Hoje ›, título, seletor de visão
+`.agenda-visoes`) e filtros por profissional (`.agenda-chip`; "Todos" +
+um por profissional, vários podem ficar ligados). Classes `.agenda-*` (ainda
+sem prefixo `.ds-`, rename futuro).
+
+- **Agendamento** (igual nas três visões): uma linha — avatar do profissional
+  (`.agenda-avatar`), primeiro nome + último sobrenome do cliente/candidato,
+  serviço/vaga e o menu "..." (`.ds-acoes`). Sem horário de intervalo. Tom de
+  status por classe (`.agenda-tom-ok|warn|bad`); cancelado leva
+  `.agendamento-cancelado`.
+- **Dia** — `.agenda-grade`; profissionais diferentes no mesmo horário ficam
+  lado a lado (`.agenda-multi`); a linha da hora atual (`.agenda-linha-agora`)
+  é maior que as demais.
+- **Semana** — `.agenda-semana`, régua de hora + uma coluna por dia. Só entram
+  os dias de trabalho: o produto informa quantos em `--agenda-dias`. O dia de
+  hoje é destacado; a hora atual tem `.agenda-rail-agora`.
+- **Mês** — `.agenda-mes`, também só com dias de trabalho; a célula de hoje
+  (`.agenda-mes-celula-hoje`) é maior e destacada.
+
+O `app.js` do painel só monta a marcação com essas classes — mexer no visual
+da agenda inteira é só aqui. O mesmo componente serve o Studio (cliente +
+serviço) e o People (candidato + vaga).
+
+### Menu de ações — `.ds-acoes`
+
+Botão "..." que abre um menu de ações de um item (usado em cada agendamento).
+`components.js` liga qualquer `.ds-acoes`: abre junto do botão sem ser cortado
+pela grade, teclado (↑ ↓ Home End Esc), e dispara `ds-acoes-escolher` com o
+`data-acao` do item. `KyvvoDS.acoesFechar()` fecha por código.
+
+### Botão — `.ds-btn`
+
+Só CSS. Variantes `.ds-btn-primario|secundario|ghost|perigo`, tamanhos
+(`.ds-btn-sm`, padrão, `.ds-btn-lg`), `.ds-btn-icone` (só ícone, exige
+`aria-label`), `disabled` e `aria-busy="true"` (carregando).
+
+### Formulário — `.ds-form`, `.ds-campo`, `.ds-input`
+
+Só CSS: `.ds-form` (+ `.ds-form-grade`), `.ds-campo` com `.ds-rotulo`,
+`.ds-input`, `.ds-select`, `.ds-textarea`, `.ds-check`, ajuda e erro
+(`.ds-campo-erro`). O rótulo visível é obrigatório (a borda do campo é
+decorativa, não é o que identifica o campo).
+
+### Pesquisa, filtro dropdown e barra de filtros
+
+- **`<form class="ds-pesquisa" data-ds-pesquisa>`** — busca com lupa e botão
+  limpar; debounce de 250 ms; eventos `ds-pesquisa-alterar` e
+  `ds-pesquisa-buscar`. `KyvvoDS.pesquisaLimpar(el)`.
+- **`.ds-dropdown[data-ds-dropdown="multi|unico"]`** — filtro em forma de
+  botão com painel `role="listbox"`; evento `ds-dropdown-alterar`.
+  `KyvvoDS.dropdownValores(el)` / `dropdownDefinir(el, valores)`.
+- **`.ds-filtros[data-ds-filtros]`** — junta pesquisa + dropdowns + "Limpar
+  filtros" e avisa o produto por **um** evento, `ds-filtros-alterar`
+  (`detail = { pesquisa, filtros, ativos }`). `KyvvoDS.filtrosEstado(el)` /
+  `filtrosLimpar(el)`.
+
+### Máscaras — `data-ds-mascara`
+
+Atributo no `<input class="ds-input">`: `telefone`, `email`, `cpf`, `cnpj`
+(inclui o CNPJ alfanumérico), `data-completa` (dd/mm/aaaa),
+`data-abreviada` (mm/aa) e `cartao` (Luhn). Formata ao digitar/colar (mantém o
+cursor), valida ao sair do campo (`aria-invalid` + mensagem em
+`.ds-campo-erro`; `data-ds-mensagem-erro` personaliza) e dispara
+`ds-mascara-validar`. Campo `required` vazio é inválido. API:
+`KyvvoDS.mascara.{tipos, formatar, limpar, validar}`. Mande ao servidor o
+valor **limpo** (`mascara.limpar(tipo, valor)`), nunca o formatado.
 
 ## Logo por tema
 
@@ -172,5 +273,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
 
 - **major** — token removido/renomeado, ou mudança de mecanismo (ex: v1→v2:
   atributo de tema, `:root` passou a ser claro)
-- **minor** — token novo
+- **minor** — token novo ou componente novo (ex.: 2.6.0 — Menu, Agenda
+  Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras)
 - **patch** — valor corrigido sem mudança de intenção visual

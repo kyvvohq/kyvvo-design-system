@@ -1,7 +1,7 @@
 {
   "name": "@kyvvohq/design-system",
-  "version": "2.5.0",
-  "description": "Tokens + assets de marca + componentes compartilhados entre os produtos Kyvvo (Studio, People).",
+  "version": "2.6.0",
+  "description": "Tokens + assets de marca + componentes compartilhados entre os produtos Kyvvo (Studio, People, CRM).",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
