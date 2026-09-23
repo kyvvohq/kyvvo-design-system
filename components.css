@@ -338,6 +338,7 @@
   border: 1px solid var(--border-strong);
   border-radius: 12px;
   overflow-x: auto;
+  transition: grid-template-columns 0.2s ease;
 }
 .agenda-semana-canto,
 .agenda-semana-cab { background: var(--surface-muted); }
@@ -366,6 +367,22 @@
 .agenda-semana-cab-hoje { background: var(--accent-tint); }
 .agenda-semana-cab-hoje > span:first-child { color: var(--accent-strong); font-weight: 600; }
 .agenda-semana-celula-hoje { box-shadow: inset 2px 0 0 rgba(var(--accent-rgb), 0.45), inset -2px 0 0 rgba(var(--accent-rgb), 0.45); }
+/* Hoje: a coluna alarga (mesmo raciocínio da linha da hora atual na visão
+ * Dia e da célula maior no Mês — aqui quem cresce é a largura, não a altura).
+ * Pura CSS: lê a posição de `.agenda-semana-cab-hoje` que o produto já marca,
+ * sem precisar de JS. As demais colunas mantêm o mínimo de 120px do pacote;
+ * se não couber, a grade rola na horizontal como já previsto acima. */
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(2).agenda-semana-cab-hoje) { grid-template-columns: 56px minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 1), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(3).agenda-semana-cab-hoje) { grid-template-columns: 56px minmax(120px, 1fr) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 2), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(4).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(2, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 3), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(5).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(3, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 4), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(6).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(4, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 5), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(7).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(5, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 6), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(8).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(6, minmax(120px, 1fr)) minmax(190px, 1.8fr); }
+/* Dentro da coluna mais larga dá pra ler um pouco maior, como o card da hora atual no Dia */
+.agenda-semana-celula-hoje .agenda-card-s .agenda-avatar { width: 22px; height: 22px; font-size: 9px; }
+.agenda-semana-celula-hoje .agenda-card-s .agenda-card-cliente { font-size: 12px; }
+.agenda-semana-celula-hoje .agenda-card-s .agenda-card-servico { font-size: 11px; }
 /* Hora atual: a faixa inteira fica mais alta, como na visão Dia */
 .agenda-semana .agenda-rail-agora { background: rgba(var(--accent-rgb), 0.1); }
 .agenda-semana .agenda-rail-agora .agenda-rail-hora { color: var(--accent-strong); font-weight: 700; font-size: 14px; }

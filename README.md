@@ -251,7 +251,9 @@ sem prefixo `.ds-`, rename futuro).
   é maior que as demais.
 - **Semana** — `.agenda-semana`, régua de hora + uma coluna por dia. Só entram
   os dias de trabalho: o produto informa quantos em `--agenda-dias`. O dia de
-  hoje é destacado; a hora atual tem `.agenda-rail-agora`.
+  hoje é destacado; a hora atual tem `.agenda-rail-agora`. Acréscimo da
+  v2.10.0: a coluna de hoje (`.agenda-semana-cab-hoje`) também fica mais larga
+  que as demais — puro CSS (`:has()`), sem precisar de nada novo no app.js.
 - **Mês** — `.agenda-mes`, também só com dias de trabalho; a célula de hoje
   (`.agenda-mes-celula-hoje`) é maior e destacada.
 
@@ -375,5 +377,5 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
 - **minor** — token novo ou componente novo (ex.: 2.6.0 — Menu, Agenda
   Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
   2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito; 2.9.0 — modal e
-  barra de seleção)
+  barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana)
 - **patch** — valor corrigido sem mudança de intenção visual
