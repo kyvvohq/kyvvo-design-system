@@ -266,6 +266,49 @@ Botão "..." que abre um menu de ações de um item (usado em cada agendamento).
 pela grade, teclado (↑ ↓ Home End Esc), e dispara `ds-acoes-escolher` com o
 `data-acao` do item. `KyvvoDS.acoesFechar()` fecha por código.
 
+### Modal — `KyvvoDS.modalAbrir`/`modalFechar`
+
+Componente novo (v2.9.0), paralelo ao modal que o Studio já tem localmente
+(`.modal-overlay`/`.modal-card`, não faz parte do DS) — pensado pra fluxos
+novos que precisam existir em mais de um produto (ex.: disparo manual de
+WhatsApp). Sem marcação `data-ds-*` pra hidratar: é só chamar por código.
+
+```js
+KyvvoDS.modalAbrir('<p>Conteúdo do modal.</p>', {
+  titulo: 'Título do modal',      // opcional
+  classeExtra: 'minha-variante',  // opcional, pra CSS de tamanho específico
+  aoFechar: () => { /* roda quando o modal fecha, por qualquer motivo */ },
+});
+KyvvoDS.modalFechar();
+```
+
+Fecha em clique no X, clique fora do card (backdrop) ou Esc. Só existe um por
+vez — abrir um novo fecha o anterior sem chamar o `aoFechar` dele. Eventos no
+`document`: `ds-modal-abrir` (`detail.overlay`), `ds-modal-fechar`.
+
+### Barra de seleção flutuante — `.ds-selecao-barra`
+
+Componente novo (v2.9.0) pra fluxos de "selecionar N itens, depois agir"
+(ex.: selecionar clientes numa tabela pra um disparo em lote). O produto
+escreve a marcação e liga os próprios botões — o componente só mostra/esconde
+e escreve a contagem:
+
+```html
+<div class="ds-selecao-barra" data-ds-selecao-barra hidden>
+  <span class="ds-selecao-barra-contagem"></span> selecionado(s)
+  <button class="ds-selecao-barra-limpar" type="button">Limpar seleção</button>
+  <button class="ds-selecao-barra-acao" type="button">Novo disparo</button>
+</div>
+```
+
+```js
+KyvvoDS.selecaoBarraAtualizar(el, quantidade); // el = a .ds-selecao-barra
+```
+
+`quantidade === 0` esconde a barra (`hidden`); qualquer valor `> 0` mostra e
+atualiza o número. Dispara `ds-selecao-alterar` (`detail.quantidade`) no
+próprio elemento.
+
 ### Botão — `.ds-btn`
 
 Só CSS. Variantes `.ds-btn-primario|secundario|ghost|perigo`, tamanhos
@@ -331,5 +374,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   atributo de tema, `:root` passou a ser claro)
 - **minor** — token novo ou componente novo (ex.: 2.6.0 — Menu, Agenda
   Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
-  2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito)
+  2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito; 2.9.0 — modal e
+  barra de seleção)
 - **patch** — valor corrigido sem mudança de intenção visual

@@ -13,6 +13,8 @@
  * Acréscimo da v2.7.0: abas.
  * Acréscimo da v2.8.0: rodapé de área não logada refeito (prévia do Instagram,
  * carrossel de produtos, links) e o carrossel.
+ * Acréscimo da v2.9.0: modal (data-ds-modal) e barra de seleção
+ * (data-ds-selecao-barra).
  *
  * Alguns componentes têm um par em components.js que hidrata a marcação a
  * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
@@ -1199,3 +1201,108 @@
 .ds-abas-painel { padding-top: var(--space-5); }
 .ds-abas-painel[hidden] { display: none; }
 .ds-abas-painel:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* ---------- Modal (KyvvoDS.modalAbrir/modalFechar) ---------- */
+/* Paralelo ao modal já existente no Studio (.modal-overlay/.modal-card,
+ * local ao produto) — não o substitui, é um componente novo pros fluxos que
+ * nascem no DS (o Studio decide se/quando migra os dele). Só pode haver um
+ * .ds-modal-overlay por vez: abrir um novo fecha o anterior. */
+.ds-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+.ds-modal-card {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-modal-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ds-modal-close:hover { background: var(--surface-muted); }
+.ds-modal-close:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.ds-modal-titulo { margin: 0 var(--space-6) 0 0; font-size: 18px; font-weight: 700; color: var(--text); }
+.ds-modal-corpo { margin-top: var(--space-4); color: var(--text); }
+.ds-modal-acoes { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); }
+
+/* ---------- Barra de seleção flutuante (KyvvoDS.selecaoBarraAtualizar) ---------- */
+/* Fica escondida (via [hidden]) até o produto chamar
+ * KyvvoDS.selecaoBarraAtualizar(el, quantidade) com quantidade > 0. O
+ * produto é quem decide o que os botões de ação/limpar fazem — o
+ * componente só cuida de mostrar/esconder e escrever a contagem. */
+.ds-selecao-barra {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  max-width: calc(100vw - var(--space-5) * 2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.25);
+  color: var(--text);
+  font-size: 14px;
+}
+.ds-selecao-barra[hidden] { display: none; }
+.ds-selecao-barra-contagem { font-weight: 700; }
+.ds-selecao-barra-limpar {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--muted-strong);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ds-selecao-barra-limpar:hover { color: var(--text); }
+.ds-selecao-barra-acao {
+  width: auto;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ds-selecao-barra-acao:hover { background: var(--accent-hover); }
+@media (max-width: 640px) {
+  .ds-selecao-barra { flex-wrap: wrap; justify-content: center; text-align: center; }
+}

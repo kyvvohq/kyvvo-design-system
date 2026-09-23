@@ -20,6 +20,11 @@
  * máscaras de campo (data-ds-mascara).
  * Acréscimo da v2.7.0: as abas (data-ds-abas).
  * Acréscimo da v2.8.0: o carrossel (data-ds-carrossel).
+ * Acréscimo da v2.9.0: o modal (KyvvoDS.modalAbrir/modalFechar) e a barra de
+ * seleção (KyvvoDS.selecaoBarraAtualizar) — ao contrário dos outros
+ * componentes, esses dois não hidratam marcação `data-ds-*` existente no
+ * load; são chamados diretamente pelo JS do produto (não há nada pra
+ * `iniciar()` fazer com eles).
  */
 (function () {
   'use strict';
@@ -1103,6 +1108,66 @@
     for (var i = 0; i < els.length; i++) prepararCarrossel(els[i]);
   }
 
+  // ---------- Modal ----------
+  // KyvvoDS.modalAbrir(conteudoHtml, opts) — opts: {titulo, classeExtra,
+  // aoFechar}. Cria `.ds-modal-overlay` > `.ds-modal-card` (com `.ds-modal-close`
+  // e, se `opts.titulo`, um `.ds-modal-titulo`) e anexa no fim do `<body>`.
+  // Fecha em clique no X, clique fora do card (backdrop) ou Esc — chama
+  // `opts.aoFechar` (se vier) e dispara `ds-modal-fechar` (bubbles) no
+  // document. Só existe um modal por vez: abrir um novo fecha o anterior sem
+  // chamar o `aoFechar` dele (mesma regra do `abrirModal` que o Studio já
+  // tem localmente). Retorna o elemento overlay, caso o chamador precise de
+  // uma referência (ex.: pra fazer querySelector do conteúdo).
+  var modalAtual = null;
+
+  function modalFechar() {
+    if (!modalAtual) return;
+    var overlay = modalAtual.overlay;
+    var aoFechar = modalAtual.aoFechar;
+    modalAtual = null;
+    overlay.remove();
+    document.removeEventListener('keydown', modalEsc);
+    if (typeof aoFechar === 'function') aoFechar();
+    document.dispatchEvent(new CustomEvent('ds-modal-fechar', { bubbles: true }));
+  }
+
+  function modalEsc(e) {
+    if (e.key === 'Escape') modalFechar();
+  }
+
+  function modalAbrir(conteudoHtml, opts) {
+    if (modalAtual) { var o = modalAtual.overlay; modalAtual = null; o.remove(); document.removeEventListener('keydown', modalEsc); }
+    opts = opts || {};
+    var overlay = document.createElement('div');
+    overlay.className = 'ds-modal-overlay';
+    overlay.innerHTML =
+      '<div class="ds-modal-card' + (opts.classeExtra ? ' ' + opts.classeExtra : '') + '" role="dialog" aria-modal="true">' +
+        '<button type="button" class="ds-modal-close" aria-label="Fechar">✕</button>' +
+        (opts.titulo ? '<h3 class="ds-modal-titulo">' + opts.titulo + '</h3>' : '') +
+        '<div class="ds-modal-corpo">' + conteudoHtml + '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('.ds-modal-close').addEventListener('click', modalFechar);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) modalFechar(); });
+    document.addEventListener('keydown', modalEsc);
+    modalAtual = { overlay: overlay, aoFechar: opts.aoFechar };
+    document.dispatchEvent(new CustomEvent('ds-modal-abrir', { bubbles: true, detail: { overlay: overlay } }));
+    return overlay;
+  }
+
+  // ---------- Barra de seleção flutuante ----------
+  // KyvvoDS.selecaoBarraAtualizar(el, quantidade) — el é o `.ds-selecao-barra`
+  // já presente na marcação do produto (com um `.ds-selecao-barra-contagem`
+  // dentro). Só mostra/esconde e escreve o número; os botões de ação/limpar
+  // são ligados pelo produto, o componente não sabe o que eles fazem.
+  function selecaoBarraAtualizar(el, quantidade) {
+    if (!el) return;
+    el.hidden = !quantidade;
+    var contagem = el.querySelector('.ds-selecao-barra-contagem');
+    if (contagem) contagem.textContent = String(quantidade);
+    el.dispatchEvent(new CustomEvent('ds-selecao-alterar', { bubbles: true, detail: { quantidade: quantidade } }));
+  }
+
   function iniciar() {
     hidratarRodapes();
     hidratarMenus();
@@ -1144,4 +1209,7 @@
   window.KyvvoDS.abasAtiva = abasAtiva;
   window.KyvvoDS.carrosselIr = carrosselIr;
   window.KyvvoDS.carrosselIndice = function (el) { prepararCarrossel(el); return carrosselIndice(el); };
+  window.KyvvoDS.modalAbrir = modalAbrir;
+  window.KyvvoDS.modalFechar = modalFechar;
+  window.KyvvoDS.selecaoBarraAtualizar = selecaoBarraAtualizar;
 })();
