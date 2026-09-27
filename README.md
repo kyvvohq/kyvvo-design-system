@@ -311,6 +311,39 @@ KyvvoDS.selecaoBarraAtualizar(el, quantidade); // el = a .ds-selecao-barra
 atualiza o número. Dispara `ds-selecao-alterar` (`detail.quantidade`) no
 próprio elemento.
 
+### Notificações (balão) — `.ds-notificacoes`
+
+Componente novo (v2.11.0), pensado pra ficar ao lado do menu do usuário no
+topo — não existe um "menu do usuário" compartilhado hoje (cada produto tem o
+seu, com nomes diferentes: `.topo-perfil` no CRM/People, `.user-menu` no
+Studio), então este componente é autocontido: o produto só o encaixa como
+irmão do próprio menu. Mesmo posicionamento/fechamento do menu de ações
+(`.ds-acoes`) acima, mas o componente não sabe o que é uma notificação — só
+abre/fecha o painel e atualiza a contagem; o produto preenche o conteúdo e
+liga os cliques dos itens.
+
+```html
+<div class="ds-notificacoes">
+  <button class="ds-notificacoes-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Notificações">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!-- ícone de sino --></svg>
+    <span class="ds-notificacoes-contagem" hidden></span>
+  </button>
+  <div class="ds-notificacoes-painel" role="menu" hidden>
+    <div class="ds-notificacoes-lista">
+      <!-- preenchido pelo produto: .ds-notificacoes-item (link) ou .ds-notificacoes-vazio -->
+    </div>
+  </div>
+</div>
+```
+
+```js
+KyvvoDS.notificacoesAtualizar(el, quantidade); // el = a .ds-notificacoes
+```
+
+`quantidade === 0` esconde a pílula; qualquer valor `> 0` mostra o número
+(`99+` acima disso). Dispara `ds-notificacoes-alterar` (`detail.quantidade`)
+no próprio elemento. Fecha em clique fora, Esc, scroll ou resize.
+
 ### Botão — `.ds-btn`
 
 Só CSS. Variantes `.ds-btn-primario|secundario|ghost|perigo`, tamanhos
@@ -377,5 +410,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
 - **minor** — token novo ou componente novo (ex.: 2.6.0 — Menu, Agenda
   Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
   2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito; 2.9.0 — modal e
-  barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana)
+  barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana;
+  2.11.0 — balão de notificações)
 - **patch** — valor corrigido sem mudança de intenção visual
