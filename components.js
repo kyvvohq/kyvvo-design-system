@@ -25,6 +25,10 @@
  * componentes, esses dois não hidratam marcação `data-ds-*` existente no
  * load; são chamados diretamente pelo JS do produto (não há nada pra
  * `iniciar()` fazer com eles).
+ * Acréscimo da v2.11.0: o balão de notificações (`.ds-notificacoes`,
+ * KyvvoDS.notificacoesAtualizar) — mesmo princípio de posicionamento/
+ * fechamento do menu de ações (.ds-acoes), mas sem `data-ds-*` pra hidratar:
+ * o produto monta a marcação e chama a função diretamente, igual ao modal.
  */
 (function () {
   'use strict';
@@ -235,6 +239,86 @@
   });
   window.addEventListener('scroll', function () { acoesFechar(false); }, true);
   window.addEventListener('resize', function () { acoesFechar(false); });
+
+  // ---------- Notificações (balão) ----------
+  // Marcação: <div class="ds-notificacoes"> <button class="ds-notificacoes-btn"
+  // aria-haspopup="menu" aria-expanded="false"> (ícone de sino próprio, o
+  // componente não fornece ícone) + <span class="ds-notificacoes-contagem"
+  // hidden> + <div class="ds-notificacoes-painel" role="menu" hidden> com o
+  // conteúdo que o produto quiser dentro. Mesmo princípio de posicionamento
+  // (`position: fixed`, vira pra cima se faltar espaço embaixo) e fechamento
+  // (clique fora/Esc/scroll/resize) do menu de ações acima — só que o
+  // componente não sabe o que é uma notificação, só abre/fecha o painel e
+  // atualiza a contagem via KyvvoDS.notificacoesAtualizar; quem preenche o
+  // conteúdo e liga os cliques dos itens é o produto.
+  var notificacoesAberto = null;
+
+  function notificacoesFechar(devolverFoco) {
+    if (!notificacoesAberto) return;
+    var aberto = notificacoesAberto;
+    notificacoesAberto = null;
+    aberto.painel.hidden = true;
+    aberto.btn.setAttribute('aria-expanded', 'false');
+    if (devolverFoco) aberto.btn.focus();
+  }
+
+  function notificacoesAbrir(btn) {
+    var caixa = btn.closest('.ds-notificacoes');
+    var painel = caixa && caixa.querySelector('.ds-notificacoes-painel');
+    if (!painel) return;
+    notificacoesFechar(false);
+    acoesFechar(false);
+    painel.style.visibility = 'hidden';
+    painel.hidden = false;
+    var r = btn.getBoundingClientRect();
+    var w = painel.offsetWidth;
+    var h = painel.offsetHeight;
+    var esq = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
+    var topo = r.bottom + 4;
+    if (topo + h > window.innerHeight - 8) topo = Math.max(8, r.top - h - 4);
+    painel.style.left = esq + 'px';
+    painel.style.top = topo + 'px';
+    painel.style.visibility = '';
+    btn.setAttribute('aria-expanded', 'true');
+    notificacoesAberto = { btn: btn, painel: painel };
+  }
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var caixa = alvo.closest('.ds-notificacoes');
+    if (!caixa) {
+      if (notificacoesAberto) notificacoesFechar(false);
+      return;
+    }
+    var btn = alvo.closest('.ds-notificacoes-btn');
+    if (btn) {
+      e.stopPropagation();
+      if (notificacoesAberto && notificacoesAberto.btn === btn) notificacoesFechar(false);
+      else notificacoesAbrir(btn);
+    }
+  }, true);
+
+  document.addEventListener('keydown', function (e) {
+    if (!notificacoesAberto) return;
+    if (e.key === 'Escape') { e.preventDefault(); notificacoesFechar(true); }
+  });
+  window.addEventListener('scroll', function () { notificacoesFechar(false); }, true);
+  window.addEventListener('resize', function () { notificacoesFechar(false); });
+
+  // KyvvoDS.notificacoesAtualizar(el, quantidade) — `el` é o `.ds-notificacoes`
+  // já presente na marcação do produto (pode haver mais de uma instância na
+  // página). Só mostra/esconde e escreve o número na pílula; o conteúdo do
+  // painel é preenchido pelo produto à parte.
+  function notificacoesAtualizar(el, quantidade) {
+    if (!el) return;
+    var pilula = el.querySelector('.ds-notificacoes-contagem');
+    if (pilula) {
+      pilula.hidden = !quantidade;
+      pilula.textContent = quantidade > 99 ? '99+' : String(quantidade);
+    }
+    el.dispatchEvent(new CustomEvent('ds-notificacoes-alterar', { bubbles: true, detail: { quantidade: quantidade } }));
+  }
 
   // ---------- Filtro dropdown ----------
   // <div class="ds-dropdown" data-ds-dropdown="multi|unico" data-ds-nome="status"
@@ -1212,4 +1296,5 @@
   window.KyvvoDS.modalAbrir = modalAbrir;
   window.KyvvoDS.modalFechar = modalFechar;
   window.KyvvoDS.selecaoBarraAtualizar = selecaoBarraAtualizar;
+  window.KyvvoDS.notificacoesAtualizar = notificacoesAtualizar;
 })();
