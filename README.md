@@ -216,7 +216,27 @@ expandem em submenus (`.ds-menu-grupo` > `.ds-menu-grupo-botao` +
 (vira o nome acessível no modo recolhido). Item atual: `.ds-menu-link-ativo` +
 `aria-current="page"`. Recolhido por padrão: `data-ds-menu-recolhido`; por
 código: `KyvvoDS.menuAlternar(nav, true)`. Evento: `ds-menu-alternar`
-(`detail.recolhido`). O pacote não traz ícones — o produto fornece os SVGs.
+(`detail.recolhido`). O pacote não traz ícones — o produto fornece os SVGs
+(precisam usar `fill`/`stroke="currentColor"` pra herdar cor, inclusive o
+roxo do modo recolhido — ver abaixo).
+
+**Revisado na v2.12.0** — três mudanças de visual, sem mudar a marcação
+`data-ds-*` nem os eventos:
+
+- **Sem logo.** `.ds-menu-topo`/`.ds-menu-marca` saíram do componente — o
+  produto não deve mais montar um cabeçalho com o wordmark Kyvvo dentro do
+  `<nav>`; a lista de itens começa direto no topo.
+- **Botão de recolher flutuante.** `.ds-menu-toggle` não fica mais numa
+  linha de topo; agora é um botão circular grudado na borda direita do menu,
+  centralizado verticalmente (`position: absolute; top: 50%; right: 0`).
+  Aberto mostra "‹"; ao recolher, gira 180° (vira "›") **e fica roxo**
+  (`--accent-dark`), junto com todos os ícones dos itens
+  (`.ds-menu-icone`) — o modo recolhido inteiro (ícones + botão) vira roxo.
+- **Seta de grupo antes do nome.** Em `.ds-menu-grupo-botao`, a seta
+  (`.ds-menu-seta`) agora renderiza **antes** do rótulo (via `order`, sem
+  precisar mudar a ordem no DOM): fechada mostra "›", e ao abrir o submenu
+  (`aria-expanded="true"`) gira **90°** (não mais 180°) — vira "v" (seta pra
+  baixo), não "‹".
 
 ### Abas — `.ds-abas` + `data-ds-abas`
 
@@ -411,5 +431,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
   2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito; 2.9.0 — modal e
   barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana;
-  2.11.0 — balão de notificações)
+  2.11.0 — balão de notificações; 2.12.0 — Menu lateral sem logo, botão de
+  recolher flutuante e seta de grupo antes do nome)
 - **patch** — valor corrigido sem mudança de intenção visual

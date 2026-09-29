@@ -29,6 +29,10 @@
  * KyvvoDS.notificacoesAtualizar) — mesmo princípio de posicionamento/
  * fechamento do menu de ações (.ds-acoes), mas sem `data-ds-*` pra hidratar:
  * o produto monta a marcação e chama a função diretamente, igual ao modal.
+ * Revisão da v2.12.0: Menu lateral sem logo/marca (produto não deve mais
+ * montar `.ds-menu-topo`/`.ds-menu-marca`), botão de recolher flutuante na
+ * borda direita e seta de grupo girando 90° (não 180°) ao abrir — só CSS,
+ * a lógica de hidratação abaixo não mudou.
  */
 (function () {
   'use strict';
@@ -82,7 +86,11 @@
 
   // ---------- Menu lateral ----------
   // Estado recolhido = classe `ds-menu-recolhido` no <nav class="ds-menu">.
-  // Grupo aberto = aria-expanded="true" no botão do grupo.
+  // Grupo aberto = aria-expanded="true" no botão do grupo. Da v2.12.0: sem
+  // `.ds-menu-topo`/`.ds-menu-marca` (removidos do componente — o produto não
+  // deve mais colocar logo no menu) e o botão de recolher (`.ds-menu-toggle`)
+  // é posicionado pelo CSS (flutuante, borda direita, centralizado
+  // verticalmente); nada muda aqui na hidratação.
   function rotuloDe(link) {
     var rotulo = link.querySelector('.ds-menu-rotulo');
     return rotulo ? rotulo.textContent.replace(/\s+/g, ' ').trim() : '';
