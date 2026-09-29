@@ -444,5 +444,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   2.11.0 — balão de notificações; 2.12.0 — Menu lateral sem logo, botão de
   recolher flutuante e seta de grupo antes do nome; 2.13.0 — Menu lateral
   como cartão flutuante, com margem, cantos arredondados e sombra; 2.14.0 —
-  seta de grupo de volta pro lado direito do nome)
+  seta de grupo de volta pro lado direito do nome; 2.15.0 — só o ícone da
+  página ativa fica roxo ao recolher)
 - **patch** — valor corrigido sem mudança de intenção visual
