@@ -238,6 +238,13 @@ roxo do modo recolhido — ver abaixo).
   (`aria-expanded="true"`) gira **90°** (não mais 180°) — vira "v" (seta pra
   baixo), não "‹".
 
+**Revisado de novo na v2.13.0** — o menu virou um cartão flutuante: `margin:
+var(--space-4)` cria a folga em volta (não encosta mais nas bordas da
+página), cantos levemente arredondados (`border-radius: var(--radius-lg)`) e
+sombra leve (`0 4px 16px rgba(var(--shadow-rgb), .08)`) no lugar da borda só
+do lado direito. O botão de recolher continua no mesmo lugar (flutuante,
+centralizado verticalmente na borda direita do cartão).
+
 ### Abas — `.ds-abas` + `data-ds-abas`
 
 Abas para dividir o conteúdo de uma tela de submenu (Dados, Histórico,
@@ -432,5 +439,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito; 2.9.0 — modal e
   barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana;
   2.11.0 — balão de notificações; 2.12.0 — Menu lateral sem logo, botão de
-  recolher flutuante e seta de grupo antes do nome)
+  recolher flutuante e seta de grupo antes do nome; 2.13.0 — Menu lateral
+  como cartão flutuante, com margem, cantos arredondados e sombra)
 - **patch** — valor corrigido sem mudança de intenção visual

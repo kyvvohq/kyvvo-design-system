@@ -467,12 +467,15 @@
 }
 
 /* ---------- Menu lateral ---------- */
-/* Acréscimo da v2.6.0, revisado na v2.12.0. Navegação lateral com itens e
- * grupos que expandem em submenus. Sem logo/marca no topo — a marca saiu do
- * menu na v2.12.0, então `.ds-menu-topo`/`.ds-menu-marca` não existem mais:
- * o menu começa direto pela lista de itens. O botão de recolher
- * (`.ds-menu-toggle`) virou flutuante, grudado na borda direita do menu e
- * centralizado verticalmente. O comportamento (recolher, expandir grupos)
+/* Acréscimo da v2.6.0, revisado na v2.12.0 e na v2.13.0. Navegação lateral
+ * com itens e grupos que expandem em submenus. Sem logo/marca no topo — a
+ * marca saiu do menu na v2.12.0, então `.ds-menu-topo`/`.ds-menu-marca` não
+ * existem mais: o menu começa direto pela lista de itens. O botão de
+ * recolher (`.ds-menu-toggle`) é flutuante, grudado na borda direita do
+ * menu e centralizado verticalmente. Na v2.13.0 o menu virou um cartão
+ * flutuante: não ocupa mais a página toda — `margin` cria a folga por fora
+ * — e ganhou cantos levemente arredondados (`--radius-lg`) e sombra em vez
+ * da borda só do lado direito. O comportamento (recolher, expandir grupos)
  * vem do components.js; sem ele, o CSS ainda lê o estado de
  * `.ds-menu-recolhido` e de `aria-expanded` nos grupos. */
 .ds-menu {
@@ -482,9 +485,12 @@
   flex-direction: column;
   gap: var(--space-2);
   width: 248px;
+  margin: var(--space-4);
   padding: var(--space-3);
   background: var(--card);
-  border-right: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.08);
   color: var(--muted-strong);
   font-size: 14px;
   transition: width 0.18s ease;
