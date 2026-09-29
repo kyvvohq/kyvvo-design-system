@@ -216,7 +216,37 @@ expandem em submenus (`.ds-menu-grupo` > `.ds-menu-grupo-botao` +
 (vira o nome acessível no modo recolhido). Item atual: `.ds-menu-link-ativo` +
 `aria-current="page"`. Recolhido por padrão: `data-ds-menu-recolhido`; por
 código: `KyvvoDS.menuAlternar(nav, true)`. Evento: `ds-menu-alternar`
-(`detail.recolhido`). O pacote não traz ícones — o produto fornece os SVGs.
+(`detail.recolhido`). O pacote não traz ícones — o produto fornece os SVGs
+(precisam usar `fill`/`stroke="currentColor"` pra herdar cor, inclusive o
+roxo do modo recolhido — ver abaixo).
+
+**Revisado na v2.12.0** — três mudanças de visual, sem mudar a marcação
+`data-ds-*` nem os eventos:
+
+- **Sem logo.** `.ds-menu-topo`/`.ds-menu-marca` saíram do componente — o
+  produto não deve mais montar um cabeçalho com o wordmark Kyvvo dentro do
+  `<nav>`; a lista de itens começa direto no topo.
+- **Botão de recolher flutuante.** `.ds-menu-toggle` não fica mais numa
+  linha de topo; agora é um botão circular grudado na borda direita do menu,
+  centralizado verticalmente (`position: absolute; top: 50%; right: 0`).
+  Aberto mostra "‹"; ao recolher, gira 180° (vira "›") **e fica roxo**
+  (`--accent-dark`), junto com todos os ícones dos itens
+  (`.ds-menu-icone`) — o modo recolhido inteiro (ícones + botão) vira roxo.
+- **Seta de grupo, do lado direito do nome** (posição original — em
+  `.ds-menu-grupo-botao`, `.ds-menu-seta` vem depois do rótulo, ordem
+  natural do DOM). Fechada mostra "›", e ao abrir o submenu
+  (`aria-expanded="true"`) gira **90°** (não mais 180°) — vira "v" (seta pra
+  baixo), não "‹".
+
+**Revisado de novo na v2.13.0** — o menu virou um cartão flutuante: `margin:
+var(--space-4)` cria a folga em volta (não encosta mais nas bordas da
+página), cantos levemente arredondados (`border-radius: var(--radius-lg)`) e
+sombra leve (`0 4px 16px rgba(var(--shadow-rgb), .08)`) no lugar da borda só
+do lado direito. O botão de recolher continua no mesmo lugar (flutuante,
+centralizado verticalmente na borda direita do cartão).
+
+**v2.14.0** — a seta de grupo voltou pro lado direito do nome (só a v2.12.0
+tinha colocado antes do rótulo); o giro (90°, "›" → "v") continua igual.
 
 ### Abas — `.ds-abas` + `data-ds-abas`
 
@@ -411,5 +441,9 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   Semana/Mês, rodapé público, botão, formulário, pesquisa, filtros, máscaras;
   2.7.0 — abas; 2.8.0 — carrossel e rodapé público refeito; 2.9.0 — modal e
   barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana;
-  2.11.0 — balão de notificações)
+  2.11.0 — balão de notificações; 2.12.0 — Menu lateral sem logo, botão de
+  recolher flutuante e seta de grupo antes do nome; 2.13.0 — Menu lateral
+  como cartão flutuante, com margem, cantos arredondados e sombra; 2.14.0 —
+  seta de grupo de volta pro lado direito do nome; 2.15.0 — só o ícone da
+  página ativa fica roxo ao recolher)
 - **patch** — valor corrigido sem mudança de intenção visual

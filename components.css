@@ -467,57 +467,66 @@
 }
 
 /* ---------- Menu lateral ---------- */
-/* Acréscimo da v2.6.0. Navegação
- * lateral com itens, grupos que expandem em submenus e um botão "‹" que
- * recolhe o menu para só os ícones. O comportamento (recolher, expandir
- * grupos) vem do components.js; sem ele, o CSS ainda lê o estado de
+/* Acréscimo da v2.6.0, revisado na v2.12.0, v2.13.0 e v2.14.0/2.15.0.
+ * Navegação lateral
+ * com itens e grupos que expandem em submenus. Sem logo/marca no topo — a
+ * marca saiu do menu na v2.12.0, então `.ds-menu-topo`/`.ds-menu-marca` não
+ * existem mais: o menu começa direto pela lista de itens. O botão de
+ * recolher (`.ds-menu-toggle`) é flutuante, grudado na borda direita do
+ * menu e centralizado verticalmente. Na v2.13.0 o menu virou um cartão
+ * flutuante: não ocupa mais a página toda — `margin` cria a folga por fora
+ * — e ganhou cantos levemente arredondados (`--radius-lg`) e sombra em vez
+ * da borda só do lado direito. O comportamento (recolher, expandir grupos)
+ * vem do components.js; sem ele, o CSS ainda lê o estado de
  * `.ds-menu-recolhido` e de `aria-expanded` nos grupos. */
 .ds-menu {
   box-sizing: border-box;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   width: 248px;
+  margin: var(--space-4);
   padding: var(--space-3);
   background: var(--card);
-  border-right: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.08);
   color: var(--muted-strong);
   font-size: 14px;
   transition: width 0.18s ease;
 }
 .ds-menu-recolhido { width: 72px; }
 .ds-menu ul { list-style: none; margin: 0; padding: 0; }
-.ds-menu-topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  min-height: 40px;
-  padding: 0 var(--space-1) 0 var(--space-3);
-}
-.ds-menu-recolhido .ds-menu-topo { justify-content: center; padding: 0; }
-.ds-menu-marca { display: inline-flex; align-items: center; min-width: 0; }
-.ds-menu-marca img,
-.ds-menu-marca svg { height: 28px; width: auto; }
-.ds-menu-recolhido .ds-menu-marca { display: none; }
+
+/* Botão de recolher: flutua meio pra fora da borda direita do menu
+ * (`right: 0` + `translate(50%, -50%)`), centralizado verticalmente
+ * (`top: 50%`). Mostra "‹" com o menu aberto; ao recolher, gira 180° (vira
+ * "›") e fica roxo (`--accent-dark`) pra marcar o estado. */
 .ds-menu-toggle {
-  flex: none;
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  z-index: 1;
+  transform: translate(50%, -50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   margin: 0;
   padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius-sm);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
   color: var(--muted-strong);
   cursor: pointer;
 }
 .ds-menu-toggle:hover { background: var(--surface-hover); color: var(--text); }
-.ds-menu-toggle svg { width: 20px; height: 20px; transition: transform 0.18s ease; }
+.ds-menu-toggle svg { width: 14px; height: 14px; transition: transform 0.18s ease; }
 .ds-menu-recolhido .ds-menu-toggle svg { transform: rotate(180deg); }
+
 .ds-menu-lista { display: flex; flex-direction: column; gap: var(--space-1); }
 .ds-menu-link {
   box-sizing: border-box;
@@ -545,9 +554,14 @@
 .ds-menu-icone { flex: none; display: inline-flex; width: 20px; height: 20px; }
 .ds-menu-icone svg { width: 20px; height: 20px; }
 .ds-menu-rotulo { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Seta de grupo: fica DEPOIS do rótulo, do lado direito do nome (ordem
+ * natural do DOM: ícone, nome, seta — sem `order`, revertido na v2.14.0).
+ * Fechado, mostra "›"; ao abrir o submenu (aria-expanded="true"), gira 90°
+ * e vira "v" (não 180°, que daria "‹"). */
 .ds-menu-seta { flex: none; display: inline-flex; width: 16px; height: 16px; transition: transform 0.18s ease; }
 .ds-menu-seta svg { width: 16px; height: 16px; }
-.ds-menu-grupo-botao[aria-expanded="true"] .ds-menu-seta { transform: rotate(180deg); }
+.ds-menu-grupo-botao[aria-expanded="true"] .ds-menu-seta { transform: rotate(90deg); }
 
 /* Submenu: aparece com o grupo aberto (aria-expanded="true") */
 .ds-menu-sub { display: none; flex-direction: column; gap: 2px; margin-top: var(--space-1); }
@@ -565,8 +579,13 @@
 .ds-menu-sublink-ativo,
 .ds-menu-sublink-ativo:hover { background: var(--accent-tint); color: var(--accent-strong); font-weight: 600; }
 
-/* Recolhido: só os ícones. O rótulo continua no DOM (nome acessível do
- * link) e o script põe o `title` de cada item; submenus e setas somem. */
+/* Recolhido: só os ícones. O único que fica roxo é o da página aberta
+ * naquele momento — `.ds-menu-link-ativo` já herda `--accent-strong` (ver
+ * regra dela acima) e o ícone puxa isso por `currentColor` (o SVG precisa
+ * usar `currentColor` — ver "Logo por tema"/ícone do balão de notificações
+ * pro mesmo padrão); os outros ícones continuam na cor neutra padrão. O
+ * rótulo continua no DOM (nome acessível do link) e o script põe o
+ * `title` de cada item; submenus e setas somem. */
 .ds-menu-recolhido .ds-menu-lista { align-items: center; }
 .ds-menu-recolhido .ds-menu-link { justify-content: center; width: 48px; padding: 0; }
 .ds-menu-recolhido .ds-menu-rotulo {
