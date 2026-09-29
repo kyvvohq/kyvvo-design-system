@@ -232,9 +232,9 @@ roxo do modo recolhido — ver abaixo).
   Aberto mostra "‹"; ao recolher, gira 180° (vira "›") **e fica roxo**
   (`--accent-dark`), junto com todos os ícones dos itens
   (`.ds-menu-icone`) — o modo recolhido inteiro (ícones + botão) vira roxo.
-- **Seta de grupo antes do nome.** Em `.ds-menu-grupo-botao`, a seta
-  (`.ds-menu-seta`) agora renderiza **antes** do rótulo (via `order`, sem
-  precisar mudar a ordem no DOM): fechada mostra "›", e ao abrir o submenu
+- **Seta de grupo, do lado direito do nome** (posição original — em
+  `.ds-menu-grupo-botao`, `.ds-menu-seta` vem depois do rótulo, ordem
+  natural do DOM). Fechada mostra "›", e ao abrir o submenu
   (`aria-expanded="true"`) gira **90°** (não mais 180°) — vira "v" (seta pra
   baixo), não "‹".
 
@@ -244,6 +244,9 @@ página), cantos levemente arredondados (`border-radius: var(--radius-lg)`) e
 sombra leve (`0 4px 16px rgba(var(--shadow-rgb), .08)`) no lugar da borda só
 do lado direito. O botão de recolher continua no mesmo lugar (flutuante,
 centralizado verticalmente na borda direita do cartão).
+
+**v2.14.0** — a seta de grupo voltou pro lado direito do nome (só a v2.12.0
+tinha colocado antes do rótulo); o giro (90°, "›" → "v") continua igual.
 
 ### Abas — `.ds-abas` + `data-ds-abas`
 
@@ -440,5 +443,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   barra de seleção; 2.10.0 — coluna de hoje mais larga na visão Semana;
   2.11.0 — balão de notificações; 2.12.0 — Menu lateral sem logo, botão de
   recolher flutuante e seta de grupo antes do nome; 2.13.0 — Menu lateral
-  como cartão flutuante, com margem, cantos arredondados e sombra)
+  como cartão flutuante, com margem, cantos arredondados e sombra; 2.14.0 —
+  seta de grupo de volta pro lado direito do nome)
 - **patch** — valor corrigido sem mudança de intenção visual

@@ -551,15 +551,15 @@
 .ds-menu-link:hover { background: var(--surface-hover); color: var(--text); }
 .ds-menu-link-ativo,
 .ds-menu-link-ativo:hover { background: var(--accent-tint); color: var(--accent-strong); }
-.ds-menu-icone { flex: none; order: 0; display: inline-flex; width: 20px; height: 20px; }
+.ds-menu-icone { flex: none; display: inline-flex; width: 20px; height: 20px; }
 .ds-menu-icone svg { width: 20px; height: 20px; }
-.ds-menu-rotulo { flex: 1 1 auto; order: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-menu-rotulo { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Seta de grupo: fica ANTES do rótulo (`order: 1`, entre o ícone e o nome —
- * a ordem no DOM pode continuar ícone/nome/seta, isso aqui é só visual).
+/* Seta de grupo: fica DEPOIS do rótulo, do lado direito do nome (ordem
+ * natural do DOM: ícone, nome, seta — sem `order`, revertido na v2.14.0).
  * Fechado, mostra "›"; ao abrir o submenu (aria-expanded="true"), gira 90°
  * e vira "v" (não 180°, que daria "‹"). */
-.ds-menu-seta { flex: none; order: 1; display: inline-flex; width: 16px; height: 16px; transition: transform 0.18s ease; }
+.ds-menu-seta { flex: none; display: inline-flex; width: 16px; height: 16px; transition: transform 0.18s ease; }
 .ds-menu-seta svg { width: 16px; height: 16px; }
 .ds-menu-grupo-botao[aria-expanded="true"] .ds-menu-seta { transform: rotate(90deg); }
 
