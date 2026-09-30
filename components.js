@@ -9,6 +9,7 @@
  *   ...
  *   <footer data-ds-rodape data-ds-produto="Studio"></footer>   (vira o rodapé completo)
  *   <nav data-ds-menu>...</nav>                                 (liga o recolher e os submenus)
+ *   <header class="ds-topbar">...</header>                      (só CSS; sem data-ds-*)
  *
  * Carregue depois de tokens.css/components.css. A ordem em relação ao JS
  * do produto (app.js/shell.js) não importa — a hidratação é no
@@ -33,6 +34,10 @@
  * montar `.ds-menu-topo`/`.ds-menu-marca`), botão de recolher flutuante na
  * borda direita e seta de grupo girando 90° (não 180°) ao abrir — só CSS,
  * a lógica de hidratação abaixo não mudou.
+ * Acréscimo da v2.16.0: o topbar (`.ds-topbar`) — marca do produto (letras
+ * em acento + sublinhado) à esquerda, sino de notificações (ícone em
+ * acento aqui) + avatar + nome à direita. Só CSS, sem `data-ds-*` e sem
+ * função nova: reaproveita o `.ds-notificacoes` que já existe.
  */
 (function () {
   'use strict';
