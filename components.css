@@ -15,6 +15,8 @@
  * carrossel de produtos, links) e o carrossel.
  * Acréscimo da v2.9.0: modal (data-ds-modal) e barra de seleção
  * (data-ds-selecao-barra).
+ * Acréscimo da v2.11.0: balão de notificações (.ds-notificacoes).
+ * Acréscimo da v2.16.0: topbar (.ds-topbar).
  *
  * Alguns componentes têm um par em components.js que hidrata a marcação a
  * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
@@ -1056,6 +1058,100 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ds-btn[aria-busy="true"]::before { animation: none; }
+}
+
+/* ---------- Topbar ---------- */
+/* Componente novo. Barra fixa no topo de cada produto: à esquerda, a marca
+ * do produto no mesmo espírito do logo Kyvvo (letras iniciais em acento +
+ * sublinhado em gradiente, maior) com "kyvvo" pequeno e neutro do lado —
+ * o produto ganha destaque, a Kyvvo vira contexto. À direita, o sino de
+ * notificações (`Notificacoes`, ícone em acento aqui), o avatar e o nome
+ * da pessoa (sem o produto embaixo — o produto já está à esquerda). Sem
+ * `data-ds-*`: é só marcação + CSS, o produto escreve o `<header>`. */
+.ds-topbar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 64px;
+  padding: 0 var(--space-5);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+}
+
+/* Marca: nome do produto (grande, com sublinhado) + "kyvvo" pequeno. */
+.ds-topbar-marca { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; }
+.ds-topbar-produto {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 7px;
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+.ds-topbar-produto-acento { color: var(--accent-strong); }
+.ds-topbar-produto::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+}
+.ds-topbar-kyvvo {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Ações: sino, avatar e nome. */
+.ds-topbar-acoes { display: flex; align-items: center; gap: var(--space-4); flex: none; }
+.ds-topbar .ds-notificacoes-btn { color: var(--accent-dark); }
+.ds-topbar .ds-notificacoes-btn:hover,
+.ds-topbar .ds-notificacoes-btn[aria-expanded="true"] { background: var(--surface-hover); color: var(--accent-strong); }
+.ds-topbar-perfil { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.ds-topbar-avatar {
+  box-sizing: border-box;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+}
+.ds-topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ds-topbar-nome {
+  min-width: 0;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .ds-topbar { padding: 0 var(--space-4); gap: var(--space-2); }
+  .ds-topbar-produto { font-size: 19px; }
+  .ds-topbar-kyvvo,
+  .ds-topbar-nome { display: none; }
+  .ds-topbar-acoes { gap: var(--space-3); }
 }
 
 /* ---------- Rodapé de área não logada ---------- */

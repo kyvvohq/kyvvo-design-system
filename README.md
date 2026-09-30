@@ -374,6 +374,50 @@ KyvvoDS.notificacoesAtualizar(el, quantidade); // el = a .ds-notificacoes
 (`99+` acima disso). Dispara `ds-notificacoes-alterar` (`detail.quantidade`)
 no próprio elemento. Fecha em clique fora, Esc, scroll ou resize.
 
+### Topbar — `.ds-topbar`
+
+Componente novo (v2.16.0). Barra fixa no topo de cada produto: à esquerda, a
+marca do produto no mesmo espírito do logo Kyvvo — letra(s) iniciais em
+`--accent-strong` + sublinhado em gradiente (`--accent` → `--cyan`) por
+baixo, maior — com "kyvvo" pequeno e neutro ao lado; a ideia é dar destaque
+ao produto, não à marca Kyvvo. À direita, o sino de notificações (reaproveita
+o `.ds-notificacoes` acima, só troca a cor do ícone pra `--accent-dark`), o
+avatar e o nome da pessoa — sem o produto embaixo do nome, porque o produto
+já está do lado esquerdo. Só CSS: sem `data-ds-*`, sem função nova, o produto
+escreve o `<header>` e encaixa o `.ds-notificacoes` de sempre dentro.
+
+```html
+<header class="ds-topbar">
+  <div class="ds-topbar-marca">
+    <span class="ds-topbar-produto"><span class="ds-topbar-produto-acento">St</span>udio</span>
+    <span class="ds-topbar-kyvvo">kyvvo</span>
+  </div>
+  <div class="ds-topbar-acoes">
+    <div class="ds-notificacoes">
+      <button class="ds-notificacoes-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Notificações">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!-- ícone de sino --></svg>
+        <span class="ds-notificacoes-contagem">3</span>
+      </button>
+    </div>
+    <div class="ds-topbar-perfil">
+      <span class="ds-topbar-avatar">AS</span>
+      <span class="ds-topbar-nome">Ana Souza</span>
+    </div>
+  </div>
+</header>
+```
+
+`.ds-topbar-produto-acento` marca só a(s) letra(s) de destaque — 1 ou 2, o
+que ficar mais legível pro nome do produto (`St`/`udio`, `Pe`/`ople`,
+`CR`/`M`); o resto do nome fica em `--text` normal. `.ds-topbar-avatar` é
+iniciais por padrão; aceita `<img>` dentro pra foto (recorta em círculo,
+`object-fit: cover`). `.ds-topbar-nome` trunca com reticências depois de
+160px.
+
+**Mobile (`max-width: 640px`)**: `.ds-topbar-kyvvo` e `.ds-topbar-nome`
+somem — sobra a marca do produto, o sino e o avatar, sem lotar a barra
+estreita.
+
 ### Botão — `.ds-btn`
 
 Só CSS. Variantes `.ds-btn-primario|secundario|ghost|perigo`, tamanhos
@@ -445,5 +489,7 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   recolher flutuante e seta de grupo antes do nome; 2.13.0 — Menu lateral
   como cartão flutuante, com margem, cantos arredondados e sombra; 2.14.0 —
   seta de grupo de volta pro lado direito do nome; 2.15.0 — só o ícone da
-  página ativa fica roxo ao recolher)
+  página ativa fica roxo ao recolher; 2.16.0 — Topbar (barra
+  padronizada por produto: marca + sino de notificações + avatar/nome,
+  some kyvvo/nome no mobile))
 - **patch** — valor corrigido sem mudança de intenção visual
