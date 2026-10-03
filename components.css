@@ -21,6 +21,10 @@
  * conversa (.ds-conversa-modal, via KyvvoDS.modalAbrir). tokens.css ganhou
  * --info-rgb/--info-bg/--info-text (faltavam pro pill "Em atendimento").
  *
+ * Acréscimo da v2.18.0: tela de login (.ds-login) — sem o wordmark Kyvvo;
+ * a marca do produto reaproveita o Topbar (.ds-topbar-marca/-produto/
+ * -kyvvo) como está. Campo usa --sunken (poço de input), não --input-bg.
+ *
  * Alguns componentes têm um par em components.js que hidrata a marcação a
  * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
  * rodapé completo). Carregue os dois:
@@ -1694,3 +1698,55 @@
   border-bottom-right-radius: 4px;
 }
 :root[data-theme="dark"] .ds-conversa-modal-msg-enviada .ds-conversa-modal-msg-texto { color: var(--bg); }
+
+/* ---------- Tela de login ---------- */
+/* Componente novo. Padroniza a tela de entrada de cada produto: sem o
+ * wordmark "Kyvvo" (o logo.svg/logo-dark.svg) — a marca agora é a mesma do
+ * Topbar (`.ds-topbar-marca`/`.ds-topbar-produto`/`.ds-topbar-kyvvo`,
+ * reaproveitados como estão, sem classe nova pra isso), reforçando o mesmo
+ * destaque ao produto em vez da Kyvvo. Reaproveita também o Botão
+ * (`.ds-btn-primario.ds-btn-bloco.ds-btn-lg`) pro "Entrar". O campo usa
+ * `--sunken` (documentado em tokens.css como a superfície certa pro "poço
+ * de um input") em vez do `--input-bg` branco com borda do Formulário —
+ * único traço visual próprio da tela de login. Só CSS, sem `data-ds-*`: o
+ * produto escreve o `<form>` e liga o submit. */
+.ds-login {
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--bg);
+  font-family: var(--font-ui);
+}
+.ds-login-cartao {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), .08);
+}
+.ds-login-marca { margin-bottom: var(--space-6); }
+/* O Topbar esconde `.ds-topbar-kyvvo` em telas estreitas (pouco espaço numa
+ * barra fixa de 64px) — aqui o cartão tem folga de sobra, então essa regra
+ * não faz sentido herdada; mais específica que o `@media` do Topbar, então
+ * ganha dele em qualquer largura. */
+.ds-login-marca .ds-topbar-kyvvo { display: inline-block; }
+.ds-login-form { display: flex; flex-direction: column; gap: var(--space-4); }
+.ds-login-input { background: var(--sunken); border-color: transparent; }
+.ds-login-entrar { margin-top: var(--space-2); }
+.ds-login-rodape { margin: 0; font-size: 14px; color: var(--muted-strong); text-align: center; }
+.ds-login-link { color: var(--accent-strong); font-weight: 600; text-decoration: none; }
+.ds-login-link:hover { text-decoration: underline; }
+.ds-login-link:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+@media (max-width: 480px) {
+  .ds-login { padding: var(--space-4); }
+  .ds-login-cartao { padding: var(--space-5) var(--space-4); }
+}

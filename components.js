@@ -12,6 +12,7 @@
  *   <header class="ds-topbar">...</header>                      (só CSS; sem data-ds-*)
  *   <div class="ds-conversas" role="table">...</div>            (lista; abre o modal "na mão")
  *   KyvvoDS.modalAbrir(htmlDaConversa, {classeExtra: 'ds-modal-card-conversa'})
+ *   <div class="ds-login">...</div>                             (só CSS; sem data-ds-*)
  *
  * Carregue depois de tokens.css/components.css. A ordem em relação ao JS
  * do produto (app.js/shell.js) não importa — a hidratação é no
@@ -48,6 +49,9 @@
  * conteúdo de `.ds-conversa-modal`, passando `classeExtra:
  * 'ds-modal-card-conversa'` pra só a lista de mensagens rolar). Reaproveita
  * o Botão (`.ds-btn-secundario.ds-btn-bloco`) pro "Assumir atendimento".
+ * Acréscimo da v2.18.0: a tela de login (`.ds-login`) — sem função nova e
+ * sem `data-ds-*`: reaproveita a marca do Topbar (`.ds-topbar-marca`) e o
+ * Botão (`.ds-btn-primario.ds-btn-bloco.ds-btn-lg`) como já existiam.
  */
 (function () {
   'use strict';

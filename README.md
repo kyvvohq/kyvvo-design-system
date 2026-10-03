@@ -517,6 +517,51 @@ um roxo novo. "Assumir atendimento" reaproveita o Botão do DS
 (`.ds-btn-secundario.ds-btn-bloco`) — não é um botão novo, só a combinação
 que já existe.
 
+### Tela de login — `.ds-login`
+
+Componente novo (v2.18.0). Padroniza a tela de entrada de cada produto —
+sem o wordmark "Kyvvo" (`logo.svg`/`logo-dark.svg`): a marca agora é a
+mesma do Topbar (`.ds-topbar-marca` + `.ds-topbar-produto` +
+`.ds-topbar-kyvvo`, reaproveitados como estão, nenhuma classe nova pra
+isso) — o produto ganha o mesmo destaque que já tem no topo do app depois
+do login, não só a Kyvvo. Só CSS, sem `data-ds-*`: o produto escreve o
+`<form>` e liga o submit.
+
+```html
+<div class="ds-login">
+  <div class="ds-login-cartao">
+    <div class="ds-topbar-marca ds-login-marca">
+      <span class="ds-topbar-produto"><span class="ds-topbar-produto-acento">CR</span>M</span>
+      <span class="ds-topbar-kyvvo">kyvvo</span>
+    </div>
+    <form class="ds-login-form">
+      <div class="ds-campo">
+        <label class="ds-rotulo" for="login-email">E-mail</label>
+        <input class="ds-input ds-login-input" type="email" id="login-email">
+      </div>
+      <div class="ds-campo">
+        <label class="ds-rotulo" for="login-senha">Senha</label>
+        <input class="ds-input ds-login-input" type="password" id="login-senha">
+      </div>
+      <button type="submit" class="ds-btn ds-btn-primario ds-btn-bloco ds-btn-lg ds-login-entrar">Entrar</button>
+    </form>
+  </div>
+  <p class="ds-login-rodape">Ainda não tem conta? <a href="#" class="ds-login-link">Criar conta</a></p>
+</div>
+```
+
+`.ds-login-input` é o mesmo `.ds-input` do Formulário (herda hover, foco,
+estado de erro), só troca o fundo: `--sunken` em vez de `--input-bg` —
+`tokens.css` já documentava esse token como a superfície certa pro "poço de
+um input", só que nenhum componente até agora tinha usado. O "Entrar" não é
+botão novo, é `.ds-btn-primario.ds-btn-bloco.ds-btn-lg` do Botão. Cartão
+centralizado na tela inteira (`.ds-login` é o wrapper com `min-height:
+100vh`); no mobile (`max-width: 480px`) só o respiro das bordas encolhe, o
+layout continua igual — já era uma coluna só. Uma ressalva de quem herda do
+Topbar: lá o "kyvvo" some em telas estreitas (`.ds-topbar-kyvvo`, pouco
+espaço numa barra de 64px) — aqui não faz sentido (o cartão tem folga de
+sobra), então `.ds-login-marca .ds-topbar-kyvvo` desfaz essa regra.
+
 ### Botão — `.ds-btn`
 
 Só CSS. Variantes `.ds-btn-primario|secundario|ghost|perigo`, tamanhos
@@ -592,5 +637,6 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   padronizada por produto: marca + sino de notificações + avatar/nome,
   some kyvvo/nome no mobile); 2.17.0 — lista de conversas (`.ds-conversas`) e
   modal de conversa (`.ds-conversa-modal`), com os tokens `--info-rgb`/
-  `--info-bg`/`--info-text` novos em `tokens.css`)
+  `--info-bg`/`--info-text` novos em `tokens.css`; 2.18.0 — tela de login
+  (`.ds-login`), sem o wordmark Kyvvo, reaproveitando a marca do Topbar)
 - **patch** — valor corrigido sem mudança de intenção visual
