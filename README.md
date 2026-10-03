@@ -418,6 +418,105 @@ iniciais por padrão; aceita `<img>` dentro pra foto (recorta em círculo,
 somem — sobra a marca do produto, o sino e o avatar, sem lotar a barra
 estreita.
 
+### Lista de conversas — `.ds-conversas` + modal — `.ds-conversa-modal`
+
+Componente novo (v2.17.0). Tabela de conversas (pensado pro atendimento via
+WhatsApp, mas não amarrado a isso): nome, telefone, status (`Em
+atendimento`/`Concluído`), quem está atendendo (bot Kyvvo ou um humano) e a
+data/hora da última mensagem. A marcação usa `role="table"/"row"/"cell"` em
+`<div>`s, não `<table>` — de propósito, pra deixar o CSS reorganizar a linha
+inteira em cartão no mobile sem as regras de layout de tabela atrapalhando.
+Só CSS, sem `data-ds-*`: clicar na linha é convenção, não comportamento
+embutido — o produto escuta o clique (e o teclado, Enter/Espaço, já que a
+linha não é nativamente um botão) e decide o que abrir.
+
+```html
+<div class="ds-conversas" role="table" aria-label="Conversas">
+  <div class="ds-conversas-cabecalho" role="row">
+    <span role="columnheader">Conversa</span>
+    <span role="columnheader">Whatsapp</span>
+    <span role="columnheader">Status</span>
+    <span role="columnheader">Atendimento</span>
+    <span role="columnheader">Última conversa</span>
+  </div>
+  <div class="ds-conversas-linha" role="row" tabindex="0">
+    <span role="cell" class="ds-conversas-nome">Bruno Alves</span>
+    <span role="cell" class="ds-conversas-whatsapp">
+      <span class="ds-conversas-bandeira" aria-hidden="true">BR</span>+55 (34) 9970-8989
+    </span>
+    <span role="cell"><span class="ds-conversas-status ds-conversas-status-atendimento">Em atendimento</span></span>
+    <span role="cell">
+      <span class="ds-conversas-atendimento">
+        <span class="ds-conversas-atendimento-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><!-- ícone de robô --></svg></span>
+        Kyvvo
+      </span>
+    </span>
+    <span role="cell" class="ds-conversas-data">30/09/2026 às 22:40</span>
+  </div>
+</div>
+```
+
+`.ds-conversas-status-atendimento` usa os tokens novos `--info-bg`/
+`--info-text` (cyan — faltavam no `tokens.css`, só existia `--info` puro, sem
+par de fundo/texto com contraste seguro pra pill, ao contrário de
+`--success`/`--warning`/`--danger`, que já tinham). `.ds-conversas-status-concluido`
+fica na família roxo da marca (`--accent-tint`/`--accent-strong`, os mesmos
+tokens já documentados como seguros pra texto de acento sobre superfície).
+Pra atendimento humano, troca o ícone (uma pessoa, não um robô) e soma a
+classe `.ds-conversas-atendimento-humano` — o emblema vira neutro:
+
+```html
+<span class="ds-conversas-atendimento ds-conversas-atendimento-humano">
+  <span class="ds-conversas-atendimento-icone"><svg ...><!-- ícone de pessoa --></svg></span>
+  Humano
+</span>
+```
+
+**Mobile (`max-width: 640px`)**: cada linha vira um cartão (nome e telefone
+em cima, status e atendimento lado a lado, data embaixo com o rótulo
+"Última conversa:" — no desktop isso já está claro pelo cabeçalho da coluna,
+no cartão não, por isso o rótulo só aparece aí). O cabeçalho da tabela some.
+
+O clique abre o `KyvvoDS.modalAbrir` (já existente) com o conteúdo de
+`.ds-conversa-modal` — sem `opts.titulo`, porque o cabeçalho com nome e
+telefone já cumpre esse papel, e com `classeExtra: 'ds-modal-card-conversa'`
+pra só a lista de mensagens rolar (cabeçalho e o botão "Assumir atendimento"
+ficam fixos no topo do cartão):
+
+```html
+<div class="ds-conversa-modal">
+  <div class="ds-conversa-modal-cabecalho">
+    <p class="ds-conversa-modal-nome">Bruno Alves</p>
+    <p class="ds-conversa-modal-whatsapp">
+      <span class="ds-conversas-bandeira" aria-hidden="true">BR</span>+55 (34) 9970-8989
+    </p>
+  </div>
+  <button type="button" class="ds-btn ds-btn-secundario ds-btn-bloco ds-conversa-modal-assumir">Assumir atendimento</button>
+  <div class="ds-conversa-modal-mensagens">
+    <div class="ds-conversa-modal-msg ds-conversa-modal-msg-recebida">
+      <p class="ds-conversa-modal-msg-texto">Oi</p>
+      <p class="ds-conversa-modal-msg-hora">30/09/2026 às 22:40</p>
+    </div>
+    <div class="ds-conversa-modal-msg ds-conversa-modal-msg-enviada">
+      <p class="ds-conversa-modal-msg-texto">Oi, Bruno! Tudo certo?</p>
+      <p class="ds-conversa-modal-msg-hora">30/09/2026 às 22:40</p>
+    </div>
+  </div>
+</div>
+```
+
+```js
+KyvvoDS.modalAbrir(htmlDaConversa, { classeExtra: 'ds-modal-card-conversa' });
+```
+
+`.ds-conversa-modal-msg-recebida` (mensagem do cliente) fica à esquerda, em
+`--surface-muted`; `.ds-conversa-modal-msg-enviada` (bot ou humano
+atendendo) fica à direita, em `--accent-dark` — o mesmo par cor de fundo +
+texto do botão primário (`.ds-btn-primario`), já testado nos dois temas, não
+um roxo novo. "Assumir atendimento" reaproveita o Botão do DS
+(`.ds-btn-secundario.ds-btn-bloco`) — não é um botão novo, só a combinação
+que já existe.
+
 ### Botão — `.ds-btn`
 
 Só CSS. Variantes `.ds-btn-primario|secundario|ghost|perigo`, tamanhos
@@ -491,5 +590,7 @@ SemVer por tag git. Push de tag `v*` dispara o workflow `publish`, que confere
   seta de grupo de volta pro lado direito do nome; 2.15.0 — só o ícone da
   página ativa fica roxo ao recolher; 2.16.0 — Topbar (barra
   padronizada por produto: marca + sino de notificações + avatar/nome,
-  some kyvvo/nome no mobile))
+  some kyvvo/nome no mobile); 2.17.0 — lista de conversas (`.ds-conversas`) e
+  modal de conversa (`.ds-conversa-modal`), com os tokens `--info-rgb`/
+  `--info-bg`/`--info-text` novos em `tokens.css`)
 - **patch** — valor corrigido sem mudança de intenção visual

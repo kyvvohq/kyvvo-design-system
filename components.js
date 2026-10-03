@@ -10,6 +10,8 @@
  *   <footer data-ds-rodape data-ds-produto="Studio"></footer>   (vira o rodapé completo)
  *   <nav data-ds-menu>...</nav>                                 (liga o recolher e os submenus)
  *   <header class="ds-topbar">...</header>                      (só CSS; sem data-ds-*)
+ *   <div class="ds-conversas" role="table">...</div>            (lista; abre o modal "na mão")
+ *   KyvvoDS.modalAbrir(htmlDaConversa, {classeExtra: 'ds-modal-card-conversa'})
  *
  * Carregue depois de tokens.css/components.css. A ordem em relação ao JS
  * do produto (app.js/shell.js) não importa — a hidratação é no
@@ -38,6 +40,14 @@
  * em acento + sublinhado) à esquerda, sino de notificações (ícone em
  * acento aqui) + avatar + nome à direita. Só CSS, sem `data-ds-*` e sem
  * função nova: reaproveita o `.ds-notificacoes` que já existe.
+ * Acréscimo da v2.17.0: a lista de conversas (`.ds-conversas`, marcação
+ * `role="table"/"row"/"cell"` — não `<table>`, pra virar cartão no mobile
+ * sem as regras de tabela atrapalhar) e o modal de conversa
+ * (`.ds-conversa-modal`). Nenhuma função nova: a linha é clicável por
+ * convenção (o produto escuta o clique e chama `KyvvoDS.modalAbrir` com o
+ * conteúdo de `.ds-conversa-modal`, passando `classeExtra:
+ * 'ds-modal-card-conversa'` pra só a lista de mensagens rolar). Reaproveita
+ * o Botão (`.ds-btn-secundario.ds-btn-bloco`) pro "Assumir atendimento".
  */
 (function () {
   'use strict';

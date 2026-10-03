@@ -49,6 +49,9 @@
   --danger-rgb: 240, 68, 56;
   --danger-bg: rgba(240, 68, 56, .10);
   --info: #22C7F2;
+  --info-rgb: 34, 199, 242;
+  --info-bg: rgba(34, 199, 242, .10);
+  --info-text: #0E7490;
   --whatsapp: #25D366;
 
   /* overlay / sombra */
@@ -108,6 +111,8 @@
   --danger: #FF6B6B;
   --danger-rgb: 255, 107, 107;
   --danger-bg: rgba(255, 107, 107, .12);
+  --info-bg: rgba(34, 199, 242, .16);
+  --info-text: #67E8F9;
 
   --overlay: rgba(0, 0, 0, .5);
   --shadow-rgb: 0, 0, 0;

@@ -17,6 +17,9 @@
  * (data-ds-selecao-barra).
  * Acréscimo da v2.11.0: balão de notificações (.ds-notificacoes).
  * Acréscimo da v2.16.0: topbar (.ds-topbar).
+ * Acréscimo da v2.17.0: lista de conversas (.ds-conversas) e o modal de
+ * conversa (.ds-conversa-modal, via KyvvoDS.modalAbrir). tokens.css ganhou
+ * --info-rgb/--info-bg/--info-text (faltavam pro pill "Em atendimento").
  *
  * Alguns componentes têm um par em components.js que hidrata a marcação a
  * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
@@ -1510,3 +1513,184 @@
 @media (max-width: 640px) {
   .ds-selecao-barra { flex-wrap: wrap; justify-content: center; text-align: center; }
 }
+
+/* ---------- Lista de conversas ---------- */
+/* Componente novo. Tabela de conversas (ex.: atendimento via WhatsApp):
+ * nome, telefone, status (`Em atendimento`/`Concluído`) e quem está
+ * atendendo (bot Kyvvo ou um humano) — mais a data/hora da última
+ * mensagem. Marcação com `role="table"/"row"/"cell"` (não `<table>`) de
+ * propósito: isso deixa o CSS reorganizar a linha inteira em cartão no
+ * mobile sem as regras de layout de tabela atrapalhando. Só CSS, sem
+ * `data-ds-*`: o produto decide o que acontece ao clicar na linha — o
+ * padrão é abrir o `KyvvoDS.modalAbrir` com o conteúdo de
+ * `.ds-conversa-modal` logo abaixo. */
+.ds-conversas {
+  box-sizing: border-box;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  font-family: var(--font-ui);
+}
+.ds-conversas-cabecalho,
+.ds-conversas-linha {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.3fr) minmax(170px, 1.3fr) minmax(130px, 1fr) minmax(110px, 1fr) minmax(150px, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.ds-conversas-cabecalho {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-strong);
+  border-bottom: 1px solid var(--border);
+}
+.ds-conversas-linha {
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+}
+.ds-conversas-linha:last-child { border-bottom: 0; }
+.ds-conversas-linha:hover,
+.ds-conversas-linha:focus-visible { background: var(--surface-hover); }
+.ds-conversas-linha:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+
+.ds-conversas-nome { font-weight: 600; color: var(--accent-strong); }
+.ds-conversas-whatsapp,
+.ds-conversas-data { color: var(--muted-strong); font-size: 14px; }
+.ds-conversas-data { text-align: right; }
+
+.ds-conversas-bandeira {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 16px;
+  padding: 0 4px;
+  margin-right: var(--space-2);
+  border-radius: 3px;
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  vertical-align: middle;
+}
+
+.ds-conversas-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ds-conversas-status-atendimento { background: var(--info-bg); color: var(--info-text); }
+.ds-conversas-status-concluido { background: var(--accent-tint); color: var(--accent-strong); }
+
+.ds-conversas-atendimento {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.ds-conversas-atendimento-icone {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+.ds-conversas-atendimento-icone svg { width: 12px; height: 12px; }
+.ds-conversas-atendimento-humano .ds-conversas-atendimento-icone {
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+}
+
+@media (max-width: 640px) {
+  .ds-conversas { border: 0; border-radius: 0; background: transparent; }
+  .ds-conversas-cabecalho { display: none; }
+  .ds-conversas-linha {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "nome nome"
+      "whatsapp whatsapp"
+      "status atendimento"
+      "data data";
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .ds-conversas-linha:last-child { margin-bottom: 0; border-bottom: 1px solid var(--border); }
+  .ds-conversas-nome { grid-area: nome; font-size: 15px; }
+  .ds-conversas-whatsapp { grid-area: whatsapp; }
+  .ds-conversas-status { grid-area: status; }
+  .ds-conversas-atendimento { grid-area: atendimento; justify-self: end; }
+  .ds-conversas-data { grid-area: data; text-align: left; font-size: 12px; }
+  .ds-conversas-data::before { content: "Última conversa: "; color: var(--muted); font-weight: 400; }
+}
+
+/* ---------- Modal de conversa (via KyvvoDS.modalAbrir) ---------- */
+/* Conteúdo pra passar em `KyvvoDS.modalAbrir(html, {classeExtra:
+ * 'ds-modal-card-conversa'})` — sem `titulo` (o cabeçalho com nome +
+ * telefone já faz esse papel). `.ds-conversa-modal-assumir` reaproveita o
+ * Botão do DS (`.ds-btn .ds-btn-secundario .ds-btn-bloco`), não é CSS novo.
+ * Só a lista de mensagens rola — cabeçalho e botão ficam fixos no topo. */
+.ds-modal-card-conversa {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+}
+.ds-modal-card-conversa .ds-modal-corpo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.ds-conversa-modal { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+.ds-conversa-modal-cabecalho { margin: 0 var(--space-6) var(--space-4) 0; }
+.ds-conversa-modal-nome { margin: 0; font-size: 17px; font-weight: 700; color: var(--text); }
+.ds-conversa-modal-whatsapp { margin: 2px 0 0; font-size: 13px; color: var(--muted-strong); }
+.ds-conversa-modal-assumir { margin-bottom: var(--space-4); flex: none; }
+.ds-conversa-modal-mensagens {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding-right: var(--space-1);
+}
+.ds-conversa-modal-msg { display: flex; flex-direction: column; max-width: 82%; margin-bottom: var(--space-3); }
+.ds-conversa-modal-msg-texto {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+.ds-conversa-modal-msg-hora { margin: 2px 2px 0; font-size: 11px; color: var(--muted); }
+.ds-conversa-modal-msg-recebida { margin-right: auto; align-items: flex-start; }
+.ds-conversa-modal-msg-recebida .ds-conversa-modal-msg-texto {
+  background: var(--surface-muted);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.ds-conversa-modal-msg-enviada { margin-left: auto; align-items: flex-end; }
+.ds-conversa-modal-msg-enviada .ds-conversa-modal-msg-texto {
+  background: var(--accent-dark);
+  color: var(--card);
+  border-bottom-right-radius: 4px;
+}
+:root[data-theme="dark"] .ds-conversa-modal-msg-enviada .ds-conversa-modal-msg-texto { color: var(--bg); }
