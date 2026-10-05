@@ -528,7 +528,7 @@ standalone com `python3 exemplos/gerar-standalone.py` quando o DS mudar.
 
 **Regras de uso**
 
-1. Toda página começa com `.ds-pagina-cab` (título, subtítulo, **uma** ação primária).
+1. Toda página começa com `.ds-pagina-cab` (título e **uma** ação primária; subtítulo `.ds-pagina-cab-sub` é opcional).
 2. Um acento (roxo) e quatro tons semânticos (`sucesso`, `aviso`, `erro`, `info`) — sempre via token, nunca hex solto. Texto sobre tinta usa `--success-text`/`--warning-text`/`--danger-text`/`--info-text` (os dois primeiros e o último de `--success`/`--danger` são novos em `tokens.css`).
 3. Erro sempre diz o **motivo** e, quando existir, oferece uma ação.
 4. No máximo uma ação visível por linha; o resto vai no menu `.ds-acoes` ("…").
@@ -542,7 +542,6 @@ standalone com `python3 exemplos/gerar-standalone.py` quando o DS mudar.
 <header class="ds-pagina-cab">
   <div class="ds-pagina-cab-texto">
     <h1 class="ds-pagina-cab-titulo">Automações</h1>
-    <p class="ds-pagina-cab-sub">Mensagens automáticas no WhatsApp.</p>
   </div>
   <div class="ds-pagina-cab-acoes"><button class="ds-btn ds-btn-primario">+ Nova automação</button></div>
 </header>
