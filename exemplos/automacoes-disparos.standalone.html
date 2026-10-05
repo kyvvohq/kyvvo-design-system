@@ -1,0 +1,3923 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automações e Disparos — exemplo do DS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* @kyvvohq/design-system — set canônico de tokens dos produtos Kyvvo.
+ *
+ * Base: vocabulário do arquivo pen.dev "Kyvvo DS" (o mesmo que o shell.css do
+ * Kyvvo People já usava), estendido com o que o painel do Studio precisa.
+ * Fonte da verdade: docs/design-system.md no repo kyvvo + o arquivo pen.dev.
+ *
+ * Tema: `:root` é o CLARO (default). O escuro é override em
+ * `:root[data-theme="dark"]` — o produto seta `data-theme` no <html>
+ * (ausente / "light" = claro).
+ */
+:root {
+  color-scheme: light;
+
+  /* superfície */
+  --bg: #F8F9FC;
+  --card: #FFFFFF;
+  --surface-muted: #F1F3F8;
+  --surface-hover: #ECEFF6;
+  --sunken: #E7EAF2;
+  --input-bg: #FFFFFF;
+  --border: #E7EAF2;
+  --border-strong: #D7DCE8;
+
+  /* texto */
+  --text: #0F111A;
+  --text-secondary: #2B3040;
+  --muted-strong: #5A6274;
+  --muted: #6B7385;
+  --text-faint: #8A90A0;
+
+  /* marca */
+  --accent: #7C5CFC;
+  --accent-rgb: 124, 92, 252;
+  --accent-hover: #6A4CE0;
+  --accent-dark: #6344E8;
+  --accent-strong: #4E33C4;
+  --accent-tint: #F1EEFF;
+  --cyan: #22C7F2;
+
+  /* semânticos */
+  --success: #12B76A;
+  --success-rgb: 18, 183, 106;
+  --success-bg: rgba(18, 183, 106, .10);
+  --success-text: #067647;
+  --warning: #F79009;
+  --warning-rgb: 247, 144, 9;
+  --warning-text: #B54708;
+  --warning-bg: rgba(247, 144, 9, .12);
+  --danger: #F04438;
+  --danger-rgb: 240, 68, 56;
+  --danger-bg: rgba(240, 68, 56, .10);
+  --danger-text: #B42318;
+  --info: #22C7F2;
+  --info-rgb: 34, 199, 242;
+  --info-bg: rgba(34, 199, 242, .10);
+  --info-text: #0E7490;
+  --whatsapp: #25D366;
+
+  /* overlay / sombra */
+  --overlay: rgba(15, 17, 26, .45);
+  --shadow-rgb: 15, 17, 26;
+
+  /* fundações — escala 8pt (base 4px) + raio */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* tipografia */
+  --font-display: 'Space Grotesk', Arial, sans-serif;
+  --font-ui: 'Inter', Arial, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #14161D;
+  --card: #1C2029;
+  --surface-muted: #242834;
+  --surface-hover: #2C313F;
+  --sunken: #0B0D13;
+  --input-bg: #171A22;
+  --border: #2C313F;
+  --border-strong: #3A4152;
+
+  --text: #E9EBF1;
+  --text-secondary: #C7CBD9;
+  --muted-strong: #A2A9BA;
+  --muted: #7C8497;
+  --text-faint: #616879;
+
+  --accent-hover: #8B6FFF;
+  --accent-dark: #9578FF;
+  --accent-strong: #C9BCFF;
+  --accent-tint: rgba(124, 92, 252, .16);
+
+  --success: #4ADE80;
+  --success-rgb: 74, 222, 128;
+  --success-bg: rgba(74, 222, 128, .12);
+  --success-text: #4ADE80;
+  --warning: #F0B354;
+  --warning-rgb: 240, 179, 84;
+  --warning-text: #FACC15;
+  --warning-bg: rgba(240, 179, 84, .12);
+  --danger: #FF6B6B;
+  --danger-rgb: 255, 107, 107;
+  --danger-bg: rgba(255, 107, 107, .12);
+  --danger-text: #FF6B6B;
+  --info-bg: rgba(34, 199, 242, .16);
+  --info-text: #67E8F9;
+
+  --overlay: rgba(0, 0, 0, .5);
+  --shadow-rgb: 0, 0, 0;
+}
+
+/* @kyvvohq/design-system — componentes compartilhados entre os produtos
+ * Kyvvo (Studio, People, CRM). Ao contrário de tokens.css (só variáveis), aqui
+ * são classes prontas: marcação + estilo definidos num lugar só, pra
+ * mudança de componente valer em todo produto no próximo deploy.
+ *
+ * Convenção: prefixo `.ds-`. Os componentes leem os tokens de tokens.css,
+ * então respeitam tema claro/escuro sem regra a mais.
+ *
+ * Acréscimos da v2.6.0: rodapé com o nome do produto ("Kyvvo powered by" +
+ * logo), rodapé de área não logada, Menu lateral, linha do agendamento e
+ * visões Semana e Mês da agenda, botão, formulário, pesquisa, filtro
+ * dropdown, barra de filtros e menu de ações ("...").
+ * Acréscimo da v2.7.0: abas.
+ * Acréscimo da v2.8.0: rodapé de área não logada refeito (prévia do Instagram,
+ * carrossel de produtos, links) e o carrossel.
+ * Acréscimo da v2.9.0: modal (data-ds-modal) e barra de seleção
+ * (data-ds-selecao-barra).
+ * Acréscimo da v2.11.0: balão de notificações (.ds-notificacoes).
+ * Acréscimo da v2.16.0: topbar (.ds-topbar).
+ * Acréscimo da v2.17.0: lista de conversas (.ds-conversas) e o modal de
+ * conversa (.ds-conversa-modal, via KyvvoDS.modalAbrir). tokens.css ganhou
+ * --info-rgb/--info-bg/--info-text (faltavam pro pill "Em atendimento").
+ *
+ * Acréscimo da v2.18.0: tela de login (.ds-login) — sem o wordmark Kyvvo;
+ * a marca do produto reaproveita o Topbar (.ds-topbar-marca/-produto/
+ * -kyvvo) como está. Campo usa --sunken (poço de input), não --input-bg.
+ * Acréscimo da v2.19.0: padrão de telas de listagem — .ds-pagina-cab,
+ * .ds-alerta, .ds-badge, .ds-switch, .ds-tabela, .ds-paginacao,
+ * .ds-medidor, .ds-vazio e .ds-detalhe. tokens.css ganhou --success-text
+ * e --danger-text.
+ *
+ * Alguns componentes têm um par em components.js que hidrata a marcação a
+ * partir de um atributo `data-ds-*` (ex.: `<footer data-ds-rodape>` vira o
+ * rodapé completo). Carregue os dois:
+ *   <link rel="stylesheet" href="/ds/components.css">
+ *   <script src="/ds/components.js"></script>
+ */
+
+/* ---------- Rodapé de área logada ---------- */
+/* Linha de borda no topo, centralizado, logo + copyright. O ano e a troca
+ * de logo por tema são feitos pelo components.js. */
+.ds-rodape {
+  padding: 22px var(--space-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* Acréscimo da v2.6.0: a linha vira
+ * "© {ano} {produto} Kyvvo powered by {logo}. Todos os direitos reservados.",
+ * com o logo inline no corpo do texto. A altura de 20px casa o wordmark com
+ * o corpo de 12px (antes: 14px, logo ao lado do texto). */
+.ds-rodape img,
+.ds-rodape svg { height: 20px; width: auto; vertical-align: middle; margin: 0 1px 0 3px; }
+
+/* ---------- Agenda (Studio) ---------- */
+/* A view Dia da agenda (grade, cards, chips de profissional, rodapé de
+ * resumo). Trazido do style.css do painel como está — os nomes ainda não
+ * têm prefixo .ds- (rename fica pra um passo futuro). Studio-only por ora:
+ * o People não tem agenda, mas centralizar aqui já resolve "mexer no visual
+ * da agenda num lugar só".
+ */
+.grade-resumo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  font-size: 12px;
+  color: var(--muted);
+}
+.grade-resumo-separador { color: var(--border-strong); }
+.grade-resumo-total { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--text); }
+
+/* ============ View Dia — rebuild do mock do canvas (artefato 6614742c) ============ */
+
+/* Cabeçalho do dia: ‹ Hoje › + data + "N atendimentos · R$ total" */
+.agenda-topo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.agenda-topo-nav { display: flex; align-items: center; gap: 6px; }
+.agenda-nav-btn,
+.agenda-nav-hoje {
+  width: auto;
+  margin: 0;
+  height: 34px;
+  padding: 0 12px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--muted-strong);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.agenda-nav-btn { width: 34px; padding: 0; font-size: 18px; line-height: 1; }
+.agenda-nav-hoje { color: var(--text); }
+.agenda-nav-btn:hover,
+.agenda-nav-hoje:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+.agenda-topo-data strong { display: block; font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.agenda-topo-data span { font-size: 13px; color: var(--muted); text-transform: capitalize; }
+
+/* Chips de filtro por profissional */
+.agenda-filtros { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.agenda-chip {
+  width: auto;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px 0 6px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.agenda-chip:not(:has(.agenda-chip-avatar)) { padding: 0 14px; }
+.agenda-chip-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+}
+.agenda-chip-ativo { background: var(--accent-tint); border-color: transparent; color: var(--accent-strong); }
+
+/* Grade: régua de hora (--sunken) + conteúdo */
+.agenda-grade {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.agenda-linha {
+  position: relative;
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+  min-height: 56px;
+}
+.agenda-linha:first-child { border-top: none; }
+.agenda-rail {
+  padding: 10px 12px 10px 0;
+  text-align: right;
+  background: var(--sunken);
+  border-right: 1px solid var(--border-strong);
+}
+.agenda-rail-hora { font: 500 12px/1.2 ui-monospace, monospace; color: var(--muted-strong); }
+.agenda-rail-nota { display: block; margin-top: 4px; font-size: 10px; color: var(--muted); }
+.agenda-linha-agora .agenda-rail { background: rgba(var(--accent-rgb), 0.1); }
+.agenda-linha-agora .agenda-rail-hora { color: var(--accent); font-weight: 700; }
+.agenda-linha-agora { box-shadow: inset 3px 0 0 var(--accent); }
+.agenda-conteudo { display: flex; align-items: center; padding: 6px 40px 6px 12px; min-width: 0; }
+.agenda-linha-intervalo .agenda-conteudo { padding: 6px 12px; }
+.agenda-livre { font-size: 13px; color: var(--muted); }
+.agenda-intervalo { font-style: italic; }
+
+/* Card horizontal (1 no horário) */
+.agenda-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--card);
+  min-width: 0;
+}
+.agenda-card-h { width: 100%; }
+.agenda-card-h-linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.agenda-card-hora { font: 500 12px/1.2 ui-monospace, monospace; color: var(--muted-strong); flex: none; }
+.agenda-card-h .grade-ag-avatar { flex: none; }
+.agenda-card-cliente { font-size: 14px; font-weight: 600; color: var(--text); flex: none; white-space: nowrap; }
+.agenda-card-servico { font-size: 13px; color: var(--muted-strong); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agenda-card-meta { margin-left: auto; font-size: 12px; color: var(--muted); flex: none; }
+.agenda-card-h .badge { flex: none; }
+.agenda-card-h .btn-acoes { flex: none; }
+
+/* Cards compactos lado a lado (2+ no horário) */
+.agenda-multi { display: flex; gap: 6px; width: 100%; min-width: 0; }
+.agenda-card-c { position: relative; flex: 1 1 0; min-width: 0; }
+.agenda-card-c-linha { display: flex; align-items: center; gap: 8px; padding: 7px 9px; cursor: pointer; min-width: 0; }
+.agenda-card-c .grade-ag-avatar { flex: none; }
+.agenda-card-c-txt { min-width: 0; }
+.agenda-card-c .agenda-card-hora { font-size: 10px; }
+.agenda-card-c .agenda-card-cliente { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agenda-card-c .agenda-card-servico { font-size: 10px; color: var(--muted-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agenda-card-c .menu-acoes {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  min-width: 168px;
+  margin-top: 4px;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+
+/* ---- Agenda: avatar + cliente + serviço, menu "...", Semana e Mês (acréscimos da v2.6.0) ----
+ * Ficam antes dos tons por status de propósito: `.agenda-tom-*` vem depois e
+ * vence no fundo e na borda esquerda. Reaproveitam a régua de hora
+ * (`.agenda-rail`), o card (`.agenda-card`) e os tons da visão Dia. */
+
+/* O menu "..." agora fica dentro do card, então o conteúdo não reserva mais a folga da direita */
+.agenda-conteudo { padding-right: 12px; }
+
+/* Seletor de visão: Dia | Semana | Mês, à direita do topo */
+.agenda-visoes {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+.agenda-visao {
+  width: auto;
+  height: 28px;
+  margin: 0;
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.agenda-visao:hover { background: var(--surface-hover); color: var(--text); }
+.agenda-visao-ativa,
+.agenda-visao-ativa:hover { background: var(--accent-tint); color: var(--accent-strong); }
+
+/* Filtros: "Todos" e um chip por profissional. Chip ligado = aria-pressed="true" + .agenda-chip-ativo */
+.agenda-chip[aria-pressed="true"] { background: var(--accent-tint); border-color: transparent; color: var(--accent-strong); }
+
+/* Avatar do profissional: iniciais. Cor por profissional via --agenda-avatar-bg / --agenda-avatar-fg */
+.agenda-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--agenda-avatar-bg, var(--accent-tint));
+  color: var(--agenda-avatar-fg, var(--accent-strong));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Linha do agendamento: [avatar] [Nome Sobrenome] [serviço / vaga] [...] */
+.agenda-ag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 8px 8px 10px;
+  cursor: pointer;
+}
+.agenda-ag .agenda-card-cliente {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agenda-ag .agenda-card-servico { flex: 1 1 0; min-width: 0; }
+.agenda-ag .ds-acoes { flex: none; margin-left: auto; }
+/* Dois ou mais profissionais no mesmo horário: lado a lado, na mesma largura */
+.agenda-multi > .agenda-card-h { flex: 1 1 0; width: auto; }
+
+/* Horário atual na visão Dia: linha maior que as demais */
+.agenda-linha-agora { min-height: 104px; }
+.agenda-linha-agora .agenda-rail-hora { font-size: 14px; }
+.agenda-linha-agora .agenda-ag { padding-block: 16px; }
+.agenda-linha-agora .agenda-card-cliente { font-size: 15px; }
+.agenda-linha-agora .agenda-card-servico { font-size: 14px; }
+
+/* Número do dia (cabeçalho da semana e células do mês); hoje leva o tint de acento */
+.agenda-dia-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.agenda-dia-num-hoje { background: var(--accent-tint); color: var(--accent-strong); }
+
+/* Card compacto para semana e mês */
+.agenda-card-s .agenda-ag {
+  gap: 5px;
+  padding: 3px 2px 3px 5px;
+}
+.agenda-card-s .agenda-avatar { width: 20px; height: 20px; font-size: 8px; }
+.agenda-card-s .agenda-card-cliente { font-size: 11px; }
+.agenda-card-s .agenda-card-servico { font-size: 10px; }
+.agenda-card-s { border-radius: 8px; }
+.agenda-mais {
+  display: block;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+
+/* Semana: régua de hora + N colunas de dia. O produto informa quantos dias
+ * aparecem em --agenda-dias (dias sem expediente não entram na marcação).
+ * Os divisores são o "gap" de 1px sobre o fundo `border`, então valem para
+ * qualquer número de colunas. Abaixo de ~780px a grade rola na horizontal. */
+.agenda-semana {
+  display: grid;
+  grid-template-columns: 56px repeat(var(--agenda-dias, 7), minmax(120px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow-x: auto;
+  transition: grid-template-columns 0.2s ease;
+}
+.agenda-semana-canto,
+.agenda-semana-cab { background: var(--surface-muted); }
+.agenda-semana-cab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  font-size: 12px;
+  color: var(--muted-strong);
+  text-transform: capitalize;
+}
+.agenda-semana-cab .agenda-dia-num { font-family: var(--font-display); font-size: 16px; }
+.agenda-semana .agenda-rail { border: 0; padding-right: 10px; }
+.agenda-semana-celula {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 4px;
+  background: var(--card);
+}
+/* Hoje: cabeçalho com tint e a coluna contornada dos lados (sem fundo, para os tons de status não mudarem de cor) */
+.agenda-semana-cab-hoje { background: var(--accent-tint); }
+.agenda-semana-cab-hoje > span:first-child { color: var(--accent-strong); font-weight: 600; }
+.agenda-semana-celula-hoje { box-shadow: inset 2px 0 0 rgba(var(--accent-rgb), 0.45), inset -2px 0 0 rgba(var(--accent-rgb), 0.45); }
+/* Hoje: a coluna alarga (mesmo raciocínio da linha da hora atual na visão
+ * Dia e da célula maior no Mês — aqui quem cresce é a largura, não a altura).
+ * Pura CSS: lê a posição de `.agenda-semana-cab-hoje` que o produto já marca,
+ * sem precisar de JS. As demais colunas mantêm o mínimo de 120px do pacote;
+ * se não couber, a grade rola na horizontal como já previsto acima. */
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(2).agenda-semana-cab-hoje) { grid-template-columns: 56px minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 1), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(3).agenda-semana-cab-hoje) { grid-template-columns: 56px minmax(120px, 1fr) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 2), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(4).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(2, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 3), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(5).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(3, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 4), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(6).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(4, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 5), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(7).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(5, minmax(120px, 1fr)) minmax(190px, 1.8fr) repeat(calc(var(--agenda-dias, 7) - 6), minmax(120px, 1fr)); }
+.agenda-semana:has(.agenda-semana-cab:nth-of-type(8).agenda-semana-cab-hoje) { grid-template-columns: 56px repeat(6, minmax(120px, 1fr)) minmax(190px, 1.8fr); }
+/* Dentro da coluna mais larga dá pra ler um pouco maior, como o card da hora atual no Dia */
+.agenda-semana-celula-hoje .agenda-card-s .agenda-avatar { width: 22px; height: 22px; font-size: 9px; }
+.agenda-semana-celula-hoje .agenda-card-s .agenda-card-cliente { font-size: 12px; }
+.agenda-semana-celula-hoje .agenda-card-s .agenda-card-servico { font-size: 11px; }
+/* Hora atual: a faixa inteira fica mais alta, como na visão Dia */
+.agenda-semana .agenda-rail-agora { background: rgba(var(--accent-rgb), 0.1); }
+.agenda-semana .agenda-rail-agora .agenda-rail-hora { color: var(--accent-strong); font-weight: 700; font-size: 14px; }
+.agenda-semana .agenda-linha-alta { min-height: 104px; }
+/* Card da semana em duas linhas: avatar + cliente + "...", e o serviço embaixo */
+.agenda-semana .agenda-card-s .agenda-ag {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 5px;
+  row-gap: 0;
+}
+.agenda-semana .agenda-card-s .agenda-avatar { grid-column: 1; grid-row: 1; }
+.agenda-semana .agenda-card-s .agenda-card-cliente { grid-column: 2; grid-row: 1; }
+.agenda-semana .agenda-card-s .ds-acoes { grid-column: 3; grid-row: 1; margin-left: 0; }
+.agenda-semana .agenda-card-s .agenda-card-servico { grid-column: 2 / 4; grid-row: 2; flex: none; }
+
+/* Mês: cabeçalho de dias da semana + células de dia (grade plana de N colunas) */
+.agenda-mes {
+  display: grid;
+  grid-template-columns: repeat(var(--agenda-dias, 7), minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.agenda-mes-cab {
+  padding: 8px 4px;
+  background: var(--surface-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted-strong);
+  text-transform: capitalize;
+}
+.agenda-mes-celula {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 6px;
+  background: var(--card);
+  cursor: pointer;
+}
+.agenda-mes-celula:hover { background: var(--surface-hover); }
+.agenda-mes-celula .agenda-dia-num { align-self: flex-start; }
+.agenda-mes-fora,
+.agenda-mes-fora:hover { background: var(--surface-muted); }
+.agenda-mes-fora .agenda-dia-num { color: var(--muted-strong); font-weight: 600; }
+/* Hoje: célula maior que as demais (a semana inteira cresce junto) e contornada */
+.agenda-mes-celula-hoje { min-height: 156px; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.agenda-visao:focus-visible,
+.agenda-nav-btn:focus-visible,
+.agenda-nav-hoje:focus-visible,
+.agenda-chip:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.agenda-mes-celula:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+
+@media (max-width: 720px) {
+  .agenda-visoes { margin-left: 0; }
+  .agenda-mes-celula { min-height: 72px; padding: 4px; }
+  .agenda-mes-celula-hoje { min-height: 104px; }
+  /* Sem espaço para o "..." na célula do mês estreito: as ações ficam na visão Dia */
+  .agenda-mes .agenda-card-s .ds-acoes { display: none; }
+}
+
+/* Tons por status — borda esquerda + fundo sutil. O texto fica na cor
+   normal (tintar deixava ilegível no claro). */
+.agenda-tom-ok { border-left-color: var(--success); background: var(--success-bg); }
+.agenda-tom-warn { border-left-color: var(--warning); background: var(--warning-bg); }
+.agenda-tom-bad { border-left-color: var(--danger); background: var(--danger-bg); }
+.agenda-card.agendamento-cancelado .agenda-card-servico { text-decoration: line-through; }
+
+@media (max-width: 720px) {
+  .agenda-linha { grid-template-columns: 56px minmax(0, 1fr); }
+  .agenda-card-h-linha { flex-wrap: wrap; }
+  .agenda-card-meta { margin-left: 0; width: 100%; }
+  .agenda-multi { flex-direction: column; }
+}
+
+/* ---------- Menu lateral ---------- */
+/* Acréscimo da v2.6.0, revisado na v2.12.0, v2.13.0 e v2.14.0/2.15.0.
+ * Navegação lateral
+ * com itens e grupos que expandem em submenus. Sem logo/marca no topo — a
+ * marca saiu do menu na v2.12.0, então `.ds-menu-topo`/`.ds-menu-marca` não
+ * existem mais: o menu começa direto pela lista de itens. O botão de
+ * recolher (`.ds-menu-toggle`) é flutuante, grudado na borda direita do
+ * menu e centralizado verticalmente. Na v2.13.0 o menu virou um cartão
+ * flutuante: não ocupa mais a página toda — `margin` cria a folga por fora
+ * — e ganhou cantos levemente arredondados (`--radius-lg`) e sombra em vez
+ * da borda só do lado direito. O comportamento (recolher, expandir grupos)
+ * vem do components.js; sem ele, o CSS ainda lê o estado de
+ * `.ds-menu-recolhido` e de `aria-expanded` nos grupos. */
+.ds-menu {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 248px;
+  margin: var(--space-4);
+  padding: var(--space-3);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.08);
+  color: var(--muted-strong);
+  font-size: 14px;
+  transition: width 0.18s ease;
+}
+.ds-menu-recolhido { width: 72px; }
+.ds-menu ul { list-style: none; margin: 0; padding: 0; }
+
+/* Botão de recolher: flutua meio pra fora da borda direita do menu
+ * (`right: 0` + `translate(50%, -50%)`), centralizado verticalmente
+ * (`top: 50%`). Mostra "‹" com o menu aberto; ao recolher, gira 180° (vira
+ * "›") e fica roxo (`--accent-dark`) pra marcar o estado. */
+.ds-menu-toggle {
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  z-index: 1;
+  transform: translate(50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-menu-toggle:hover { background: var(--surface-hover); color: var(--text); }
+.ds-menu-toggle svg { width: 14px; height: 14px; transition: transform 0.18s ease; }
+.ds-menu-recolhido .ds-menu-toggle svg { transform: rotate(180deg); }
+
+.ds-menu-lista { display: flex; flex-direction: column; gap: var(--space-1); }
+.ds-menu-link {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--muted-strong);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ds-menu-link:hover { background: var(--surface-hover); color: var(--text); }
+.ds-menu-link-ativo,
+.ds-menu-link-ativo:hover { background: var(--accent-tint); color: var(--accent-strong); }
+.ds-menu-icone { flex: none; display: inline-flex; width: 20px; height: 20px; }
+.ds-menu-icone svg { width: 20px; height: 20px; }
+.ds-menu-rotulo { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Seta de grupo: fica DEPOIS do rótulo, do lado direito do nome (ordem
+ * natural do DOM: ícone, nome, seta — sem `order`, revertido na v2.14.0).
+ * Fechado, mostra "›"; ao abrir o submenu (aria-expanded="true"), gira 90°
+ * e vira "v" (não 180°, que daria "‹"). */
+.ds-menu-seta { flex: none; display: inline-flex; width: 16px; height: 16px; transition: transform 0.18s ease; }
+.ds-menu-seta svg { width: 16px; height: 16px; }
+.ds-menu-grupo-botao[aria-expanded="true"] .ds-menu-seta { transform: rotate(90deg); }
+
+/* Submenu: aparece com o grupo aberto (aria-expanded="true") */
+.ds-menu-sub { display: none; flex-direction: column; gap: 2px; margin-top: var(--space-1); }
+.ds-menu-grupo-botao[aria-expanded="true"] + .ds-menu-sub { display: flex; }
+.ds-menu-sublink {
+  display: block;
+  padding: 8px var(--space-3) 8px 44px;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+}
+.ds-menu-sublink:hover { background: var(--surface-hover); color: var(--text); }
+.ds-menu-sublink-ativo,
+.ds-menu-sublink-ativo:hover { background: var(--accent-tint); color: var(--accent-strong); font-weight: 600; }
+
+/* Recolhido: só os ícones. O único que fica roxo é o da página aberta
+ * naquele momento — `.ds-menu-link-ativo` já herda `--accent-strong` (ver
+ * regra dela acima) e o ícone puxa isso por `currentColor` (o SVG precisa
+ * usar `currentColor` — ver "Logo por tema"/ícone do balão de notificações
+ * pro mesmo padrão); os outros ícones continuam na cor neutra padrão. O
+ * rótulo continua no DOM (nome acessível do link) e o script põe o
+ * `title` de cada item; submenus e setas somem. */
+.ds-menu-recolhido .ds-menu-lista { align-items: center; }
+.ds-menu-recolhido .ds-menu-link { justify-content: center; width: 48px; padding: 0; }
+.ds-menu-recolhido .ds-menu-rotulo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.ds-menu-recolhido .ds-menu-seta,
+.ds-menu.ds-menu-recolhido .ds-menu-grupo-botao + .ds-menu-sub { display: none; }
+
+.ds-menu-link:focus-visible,
+.ds-menu-sublink:focus-visible,
+.ds-menu-toggle:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-menu,
+  .ds-menu-toggle svg,
+  .ds-menu-seta { transition: none; }
+}
+
+/* ======================================================================
+ * Acréscimos da v2.6.0: Botão,
+ * Formulário, Barra de pesquisa, Filtro dropdown, Barra de filtros,
+ * Menu de ações ("...") e Máscaras. Prefixo `.ds-`, só tokens.
+ * Tinta sobre preenchimento sólido (accent-dark, danger): `card` no claro
+ * (5.96:1 sobre accent-dark) e `bg` no escuro (5.51:1); no perigo, `text`
+ * no claro (5.01:1) e `bg` no escuro (6.51:1).
+ * ====================================================================== */
+
+/* ---------- Botão ---------- */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: 600 14px/1 var(--font-ui);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ds-btn svg { width: 18px; height: 18px; flex: none; }
+.ds-btn-primario { background: var(--accent-dark); color: var(--card); }
+.ds-btn-primario:hover { background: var(--accent-hover); }
+.ds-btn-secundario { background: var(--card); border-color: var(--border-strong); color: var(--text); }
+.ds-btn-secundario:hover { background: var(--surface-hover); }
+.ds-btn-ghost { background: transparent; color: var(--accent-strong); }
+.ds-btn-ghost:hover { background: var(--accent-tint); }
+.ds-btn-perigo { background: var(--danger); color: var(--text); }
+.ds-btn-perigo:hover { filter: brightness(0.94); }
+:root[data-theme="dark"] .ds-btn-primario { color: var(--bg); }
+:root[data-theme="dark"] .ds-btn-perigo { color: var(--bg); }
+:root[data-theme="dark"] .ds-btn:disabled,
+:root[data-theme="dark"] .ds-btn[aria-disabled="true"] { color: var(--text-faint); }
+.ds-btn-sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: var(--radius-sm); }
+.ds-btn-lg { height: 48px; padding: 0 22px; font-size: 15px; }
+.ds-btn-icone { width: 40px; padding: 0; }
+.ds-btn-icone.ds-btn-sm { width: 32px; }
+.ds-btn-icone.ds-btn-lg { width: 48px; }
+.ds-btn-bloco { display: flex; width: 100%; }
+.ds-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-btn:disabled,
+.ds-btn[aria-disabled="true"],
+.ds-btn:disabled:hover,
+.ds-btn[aria-disabled="true"]:hover {
+  background: var(--surface-muted);
+  border-color: var(--border);
+  color: var(--text-faint);
+  filter: none;
+  cursor: not-allowed;
+}
+/* Carregando: mantém a largura, troca o ícone por um giro e ignora cliques */
+.ds-btn[aria-busy="true"] { pointer-events: none; }
+.ds-btn[aria-busy="true"]::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: ds-giro 0.8s linear infinite;
+}
+.ds-btn[aria-busy="true"] > svg { display: none; }
+@keyframes ds-giro { to { transform: rotate(360deg); } }
+.ds-btn-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* ---------- Formulário ---------- */
+.ds-form { display: flex; flex-direction: column; gap: 20px; }
+.ds-form-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ds-form-grade > .ds-campo-largo { grid-column: 1 / -1; }
+.ds-form-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+.ds-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ds-rotulo { font-size: 13px; font-weight: 600; color: var(--text); }
+.ds-rotulo-opcional { font-weight: 400; color: var(--muted-strong); }
+.ds-input,
+.ds-select select,
+.ds-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 400 14px/1.4 var(--font-ui);
+}
+.ds-textarea { height: auto; min-height: 88px; padding: 10px 12px; resize: vertical; }
+.ds-input::placeholder,
+.ds-textarea::placeholder { color: var(--text-faint); }
+.ds-input:hover,
+.ds-select select:hover,
+.ds-textarea:hover { border-color: var(--muted); }
+.ds-input:focus,
+.ds-select select:focus,
+.ds-textarea:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25);
+}
+.ds-input[aria-invalid="true"],
+.ds-select select[aria-invalid="true"],
+.ds-textarea[aria-invalid="true"] { border-color: var(--danger); }
+.ds-input[aria-invalid="true"]:focus,
+.ds-select select[aria-invalid="true"]:focus,
+.ds-textarea[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.25); }
+.ds-input:disabled,
+.ds-select select:disabled,
+.ds-textarea:disabled { background: var(--surface-muted); border-color: var(--border); color: var(--text-faint); cursor: not-allowed; }
+.ds-select { position: relative; }
+.ds-select select { padding-right: 36px; appearance: none; -webkit-appearance: none; cursor: pointer; }
+.ds-select > svg { position: absolute; top: 50%; right: 12px; width: 16px; height: 16px; margin-top: -8px; color: var(--muted-strong); pointer-events: none; }
+.ds-campo-ajuda { font-size: 12px; color: var(--muted-strong); }
+.ds-campo-erro {
+  --ds-sobre-perigo: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+:root[data-theme="dark"] .ds-campo-erro { --ds-sobre-perigo: var(--bg); }
+.ds-campo-erro::before {
+  content: "!";
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: var(--ds-sobre-perigo);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ds-campo-erro[hidden] { display: none; }
+.ds-check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text); cursor: pointer; }
+.ds-check input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--accent-dark); cursor: pointer; }
+.ds-check input:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+@media (max-width: 560px) {
+  .ds-form-grade { grid-template-columns: minmax(0, 1fr); }
+  .ds-form-acoes .ds-btn { flex: 1 1 auto; }
+}
+
+/* ---------- Barra de pesquisa ---------- */
+.ds-pesquisa { position: relative; display: flex; align-items: center; min-width: 0; }
+.ds-pesquisa-icone { position: absolute; left: 12px; width: 18px; height: 18px; color: var(--muted-strong); pointer-events: none; }
+.ds-pesquisa-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 40px 0 38px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 400 14px/1.4 var(--font-ui);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ds-pesquisa-input::-webkit-search-cancel-button,
+.ds-pesquisa-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.ds-pesquisa-input::placeholder { color: var(--text-faint); }
+.ds-pesquisa-input:hover { border-color: var(--muted); }
+.ds-pesquisa-input:focus { outline: none; border-color: var(--accent-dark); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25); }
+.ds-pesquisa-limpar {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-pesquisa-limpar svg { width: 16px; height: 16px; }
+.ds-pesquisa-limpar:hover { background: var(--surface-hover); color: var(--text); }
+.ds-pesquisa-limpar:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.ds-pesquisa-limpar[hidden] { display: none; }
+
+/* ---------- Filtro dropdown ---------- */
+.ds-dropdown { position: relative; display: inline-block; }
+.ds-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 40px;
+  margin: 0;
+  padding: 0 10px 0 14px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font: 600 14px/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ds-dropdown-btn:hover { background: var(--surface-hover); }
+.ds-dropdown-btn[aria-expanded="true"] { border-color: var(--accent-dark); }
+.ds-dropdown-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-dropdown-ativo .ds-dropdown-btn { background: var(--accent-tint); border-color: transparent; color: var(--accent-strong); }
+.ds-dropdown-contagem {
+  --ds-sobre-cor: var(--card);
+  min-width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent-dark);
+  color: var(--ds-sobre-cor);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+:root[data-theme="dark"] .ds-dropdown-contagem { --ds-sobre-cor: var(--bg); }
+.ds-dropdown-contagem[hidden] { display: none; }
+.ds-dropdown-seta { display: inline-flex; color: var(--muted-strong); }
+.ds-dropdown-ativo .ds-dropdown-seta { color: var(--accent-strong); }
+.ds-dropdown-seta svg { width: 16px; height: 16px; }
+.ds-dropdown-btn[aria-expanded="true"] .ds-dropdown-seta svg { transform: rotate(180deg); }
+.ds-dropdown-painel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  min-width: 100%;
+  width: max-content;
+  max-width: 320px;
+  max-height: 320px;
+  overflow: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-dropdown-painel[hidden] { display: none; }
+.ds-dropdown-lista { margin: 0; padding: 0; list-style: none; }
+.ds-dropdown-opcao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.ds-dropdown-opcao:hover,
+.ds-dropdown-opcao[data-foco] { background: var(--surface-hover); }
+.ds-dropdown-opcao:focus { outline: none; }
+.ds-dropdown-opcao:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+.ds-dropdown-marca {
+  --ds-sobre-cor: var(--card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--muted);
+  border-radius: 4px;
+  color: transparent;
+}
+:root[data-theme="dark"] .ds-dropdown-marca { --ds-sobre-cor: var(--bg); }
+.ds-dropdown-marca svg { width: 12px; height: 12px; }
+.ds-dropdown-opcao[aria-selected="true"] .ds-dropdown-marca { background: var(--accent-dark); border-color: var(--accent-dark); color: var(--ds-sobre-cor); }
+/* Escolha única: sem caixa, só o visto à esquerda no item marcado */
+.ds-dropdown[data-ds-dropdown="unico"] .ds-dropdown-marca { border-color: transparent; background: transparent; }
+.ds-dropdown[data-ds-dropdown="unico"] .ds-dropdown-opcao[aria-selected="true"] .ds-dropdown-marca { background: transparent; color: var(--accent-strong); }
+.ds-dropdown[data-ds-dropdown="unico"] .ds-dropdown-opcao[aria-selected="true"] { color: var(--accent-strong); font-weight: 600; }
+.ds-dropdown-rodape { display: flex; justify-content: flex-end; margin: 4px -6px -6px; padding: 6px; border-top: 1px solid var(--border); }
+
+/* ---------- Barra de filtros ---------- */
+.ds-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.ds-filtros .ds-pesquisa { flex: 1 1 240px; max-width: 360px; }
+.ds-filtros-fim { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.ds-filtros-resumo { font-size: 13px; color: var(--muted-strong); white-space: nowrap; }
+.ds-filtros-limpar[hidden] { display: none; }
+
+/* ---------- Menu de ações ("...") ---------- */
+/* O menu é `position: fixed`, posicionado pelo components.js a partir do botão:
+ * assim ele não é cortado por células com overflow (semana, mês, tabelas). */
+.ds-acoes { display: inline-flex; }
+.ds-acoes-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-acoes-btn svg { width: 18px; height: 18px; }
+.ds-acoes-btn:hover,
+.ds-acoes-btn[aria-expanded="true"] { background: var(--surface-hover); color: var(--text); }
+.ds-acoes-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.agenda-card-s .ds-acoes-btn { width: 22px; height: 22px; }
+.agenda-card-s .ds-acoes-btn svg { width: 16px; height: 16px; }
+.ds-acoes-menu {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  min-width: 184px;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-acoes-menu[hidden] { display: none; }
+.ds-acoes-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0 10px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: 400 14px/1 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.ds-acoes-item svg { width: 16px; height: 16px; flex: none; color: var(--muted-strong); }
+.ds-acoes-item:hover,
+.ds-acoes-item:focus-visible { background: var(--surface-hover); outline: none; }
+.ds-acoes-item:focus-visible { box-shadow: inset 0 0 0 2px var(--accent-dark); }
+.ds-acoes-item-perigo:hover,
+.ds-acoes-item-perigo:focus-visible { background: var(--danger-bg); }
+.ds-acoes-item-perigo svg { color: var(--text); }
+.ds-acoes-separador { height: 1px; margin: 4px 0; background: var(--border); border: 0; }
+
+/* ---------- Notificações (balão) — v2.11.0 ---------- */
+/* Marcação: <div class="ds-notificacoes"> > <button class="ds-notificacoes-btn"
+   aria-haspopup="menu" aria-expanded="false"> (ícone de sino próprio, inline
+   SVG — o componente não fornece ícone) + <span class="ds-notificacoes-contagem"
+   hidden> + <div class="ds-notificacoes-painel" role="menu" hidden> >
+   <div class="ds-notificacoes-lista">. Ver README "Notificações". */
+.ds-notificacoes { display: inline-flex; }
+.ds-notificacoes-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-full);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+.ds-notificacoes-btn svg { width: 20px; height: 20px; }
+.ds-notificacoes-btn:hover,
+.ds-notificacoes-btn[aria-expanded="true"] { background: var(--surface-hover); color: var(--text); }
+.ds-notificacoes-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.ds-notificacoes-contagem {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.ds-notificacoes-contagem[hidden] { display: none; }
+.ds-notificacoes-painel {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 6px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-notificacoes-painel[hidden] { display: none; }
+.ds-notificacoes-item {
+  display: block;
+  padding: 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+.ds-notificacoes-item:hover,
+.ds-notificacoes-item:focus-visible { background: var(--surface-hover); outline: none; }
+.ds-notificacoes-item-titulo { font-size: 13px; font-weight: 600; color: var(--text); }
+.ds-notificacoes-item-meta { margin-top: 2px; font-size: 12px; color: var(--muted-strong); }
+.ds-notificacoes-grupo-titulo { padding: 8px 10px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+.ds-notificacoes-vazio { padding: 24px 10px; text-align: center; font-size: 13px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-btn[aria-busy="true"]::before { animation: none; }
+}
+
+/* ---------- Topbar ---------- */
+/* Componente novo. Barra fixa no topo de cada produto: à esquerda, a marca
+ * do produto no mesmo espírito do logo Kyvvo (letras iniciais em acento +
+ * sublinhado em gradiente, maior) com "kyvvo" pequeno e neutro do lado —
+ * o produto ganha destaque, a Kyvvo vira contexto. À direita, o sino de
+ * notificações (`Notificacoes`, ícone em acento aqui), o avatar e o nome
+ * da pessoa (sem o produto embaixo — o produto já está à esquerda). Sem
+ * `data-ds-*`: é só marcação + CSS, o produto escreve o `<header>`. */
+.ds-topbar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 64px;
+  padding: 0 var(--space-5);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+}
+
+/* Marca: nome do produto (grande, com sublinhado) + "kyvvo" pequeno. */
+.ds-topbar-marca { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; }
+.ds-topbar-produto {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 7px;
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+.ds-topbar-produto-acento { color: var(--accent-strong); }
+.ds-topbar-produto::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+}
+.ds-topbar-kyvvo {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Ações: sino, avatar e nome. */
+.ds-topbar-acoes { display: flex; align-items: center; gap: var(--space-4); flex: none; }
+.ds-topbar .ds-notificacoes-btn { color: var(--accent-dark); }
+.ds-topbar .ds-notificacoes-btn:hover,
+.ds-topbar .ds-notificacoes-btn[aria-expanded="true"] { background: var(--surface-hover); color: var(--accent-strong); }
+.ds-topbar-perfil { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.ds-topbar-avatar {
+  box-sizing: border-box;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+}
+.ds-topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ds-topbar-nome {
+  min-width: 0;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .ds-topbar { padding: 0 var(--space-4); gap: var(--space-2); }
+  .ds-topbar-produto { font-size: 19px; }
+  .ds-topbar-kyvvo,
+  .ds-topbar-nome { display: none; }
+  .ds-topbar-acoes { gap: var(--space-3); }
+}
+
+/* ---------- Rodapé de área não logada ---------- */
+/* Acréscimo da v2.6.0, refeito na v2.8.0. Só CSS mais o carrossel de produtos:
+ * o produto escreve a marcação (três colunas: prévia do Instagram com o link
+ * embaixo, carrossel dos produtos Kyvvo e links legais). O roxo da marca
+ * aparece na barra em gradiente sobre a linha de cima (a mesma do sublinhado
+ * do logo) e nos cartões do carrossel. */
+.ds-rodape-publico {
+  padding: var(--space-6) var(--space-5);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.ds-rodape-publico-conteudo {
+  position: relative;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 440px) max-content;
+  justify-content: space-between;
+  gap: var(--space-6) var(--space-7);
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--border-strong);
+}
+.ds-rodape-publico-conteudo::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 74px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+}
+.ds-rodape-publico-titulo {
+  margin: 0 0 12px;
+  font: 600 13px/1.2 var(--font-ui);
+  color: var(--text);
+}
+.ds-rodape-publico-texto { margin: 0; line-height: 1.5; color: var(--muted-strong); }
+.ds-rodape-publico-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-rodape-publico-links { justify-self: end; }
+.ds-rodape-publico a {
+  color: var(--muted-strong);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-dark);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.ds-rodape-publico a:hover { color: var(--text); }
+.ds-rodape-publico a:focus-visible {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Coluna 1: prévia do Instagram (imagem que o produto fornece) e o link embaixo */
+.ds-rodape-publico-social { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.ds-rodape-publico-imagem { display: block; border-radius: var(--radius-md); overflow: hidden; }
+.ds-rodape-publico-imagem img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: var(--surface-muted);
+}
+.ds-rodape-publico-imagem:hover img { opacity: 0.92; }
+
+/* Coluna 2: cartão de produto dentro do carrossel */
+.ds-rodape-publico-produto {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 152px;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  background: var(--accent-tint);
+  border-radius: var(--radius-lg);
+}
+.ds-rodape-publico-produto::before {
+  content: "";
+  flex: none;
+  width: 74px;
+  height: 4px;
+  margin-bottom: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+}
+.ds-rodape-publico-produto-nome { margin: 0; font: 700 22px/1.2 var(--font-display); color: var(--text); }
+.ds-rodape-publico-produto-nome a { color: inherit; text-decoration: none; }
+.ds-rodape-publico-produto-nome a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.ds-rodape-publico-produto-nome a:focus-visible { outline: none; }
+.ds-rodape-publico-produto-nome a:focus-visible::after { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-rodape-publico-produto:hover .ds-rodape-publico-produto-nome a { color: var(--accent-strong); }
+.ds-rodape-publico-produto-texto { margin: 0; line-height: 1.5; color: var(--muted-strong); }
+.ds-rodape-publico-produto-ir { margin-top: auto; font-weight: 600; color: var(--accent-strong); }
+
+@media (max-width: 960px) {
+  .ds-rodape-publico-conteudo { grid-template-columns: minmax(0, 240px) minmax(0, 1fr); }
+  .ds-rodape-publico-links { grid-column: 1 / -1; justify-self: start; }
+}
+@media (max-width: 720px) {
+  .ds-rodape-publico { padding: var(--space-5) var(--space-4); }
+  .ds-rodape-publico-conteudo { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); padding-top: var(--space-6); }
+  .ds-rodape-publico-social { max-width: 280px; }
+  .ds-rodape-publico-links { justify-self: start; }
+}
+
+/* Acréscimo da v2.8.0. Carrossel: trilho que rola na horizontal com um slide
+ * por vez, botões anterior e próximo e pontos. A rolagem por toque e o snap
+ * são do próprio navegador; o script só liga os botões, os pontos e o estado
+ * (slide ativo, botões nas pontas, slides fora da vista inertes). */
+.ds-carrossel { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.ds-carrossel-trilho {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.ds-carrossel-trilho::-webkit-scrollbar { display: none; }
+.ds-carrossel-slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; }
+.ds-carrossel-controles { display: flex; align-items: center; gap: var(--space-3); }
+.ds-carrossel-controles[hidden] { display: none; }
+.ds-carrossel-btn {
+  flex: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  cursor: pointer;
+}
+.ds-carrossel-btn svg { width: 16px; height: 16px; }
+.ds-carrossel-btn:hover:not([disabled]) { background: var(--surface-hover); }
+.ds-carrossel-btn[disabled] { color: var(--text-faint); cursor: not-allowed; }
+.ds-carrossel-btn:focus-visible,
+.ds-carrossel-ponto:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-carrossel-pontos { display: flex; align-items: center; }
+.ds-carrossel-ponto {
+  position: relative;
+  box-sizing: border-box;
+  width: 24px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.ds-carrossel-ponto::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  transform: translate(-50%, -50%);
+  transition: width 0.18s ease, background-color 0.18s ease;
+}
+.ds-carrossel-ponto:hover::before { background: var(--text); }
+.ds-carrossel-ponto[aria-current="true"]::before { width: 20px; background: var(--accent-dark); }
+@media (prefers-reduced-motion: reduce) {
+  .ds-carrossel-ponto::before { transition: none; }
+}
+
+/* Acréscimo da v2.7.0. Abas: lista de abas (`role="tablist"`) com um painel
+ * por aba, para o conteúdo de uma tela dentro de um submenu. A aba ativa leva
+ * texto `accent-strong` e um traço de 2px em `accent-dark`; o traço cobre a
+ * linha de borda da lista. Em telas estreitas a lista rola na horizontal. */
+.ds-abas-lista {
+  position: relative;
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+.ds-aba {
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 44px;
+  margin: 0;
+  padding: 0 var(--space-4);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--muted-strong);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ds-aba::after {
+  content: "";
+  position: absolute;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+}
+.ds-aba:hover:not([disabled]):not([aria-selected="true"]) { background: var(--surface-hover); color: var(--text); }
+.ds-aba[aria-selected="true"] { color: var(--accent-strong); }
+.ds-aba[aria-selected="true"]::after { background: var(--accent-dark); }
+.ds-aba[disabled] { color: var(--text-faint); cursor: not-allowed; }
+.ds-aba:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+.ds-aba > svg { flex: none; width: 18px; height: 18px; }
+.ds-aba-contagem {
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+}
+.ds-aba[aria-selected="true"] .ds-aba-contagem { background: var(--accent-tint); color: var(--accent-strong); }
+.ds-abas-painel { padding-top: var(--space-5); }
+.ds-abas-painel[hidden] { display: none; }
+.ds-abas-painel:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* ---------- Modal (KyvvoDS.modalAbrir/modalFechar) ---------- */
+/* Paralelo ao modal já existente no Studio (.modal-overlay/.modal-card,
+ * local ao produto) — não o substitui, é um componente novo pros fluxos que
+ * nascem no DS (o Studio decide se/quando migra os dele). Só pode haver um
+ * .ds-modal-overlay por vez: abrir um novo fecha o anterior. */
+.ds-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+.ds-modal-card {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.2);
+}
+.ds-modal-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ds-modal-close:hover { background: var(--surface-muted); }
+.ds-modal-close:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.ds-modal-titulo { margin: 0 var(--space-6) 0 0; font-size: 18px; font-weight: 700; color: var(--text); }
+.ds-modal-corpo { margin-top: var(--space-4); color: var(--text); }
+.ds-modal-acoes { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); }
+
+/* ---------- Barra de seleção flutuante (KyvvoDS.selecaoBarraAtualizar) ---------- */
+/* Fica escondida (via [hidden]) até o produto chamar
+ * KyvvoDS.selecaoBarraAtualizar(el, quantidade) com quantidade > 0. O
+ * produto é quem decide o que os botões de ação/limpar fazem — o
+ * componente só cuida de mostrar/esconder e escrever a contagem. */
+.ds-selecao-barra {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  max-width: calc(100vw - var(--space-5) * 2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.25);
+  color: var(--text);
+  font-size: 14px;
+}
+.ds-selecao-barra[hidden] { display: none; }
+.ds-selecao-barra-contagem { font-weight: 700; }
+.ds-selecao-barra-limpar {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--muted-strong);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ds-selecao-barra-limpar:hover { color: var(--text); }
+.ds-selecao-barra-acao {
+  width: auto;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ds-selecao-barra-acao:hover { background: var(--accent-hover); }
+@media (max-width: 640px) {
+  .ds-selecao-barra { flex-wrap: wrap; justify-content: center; text-align: center; }
+}
+
+/* ---------- Lista de conversas ---------- */
+/* Componente novo. Tabela de conversas (ex.: atendimento via WhatsApp):
+ * nome, telefone, status (`Em atendimento`/`Concluído`) e quem está
+ * atendendo (bot Kyvvo ou um humano) — mais a data/hora da última
+ * mensagem. Marcação com `role="table"/"row"/"cell"` (não `<table>`) de
+ * propósito: isso deixa o CSS reorganizar a linha inteira em cartão no
+ * mobile sem as regras de layout de tabela atrapalhando. Só CSS, sem
+ * `data-ds-*`: o produto decide o que acontece ao clicar na linha — o
+ * padrão é abrir o `KyvvoDS.modalAbrir` com o conteúdo de
+ * `.ds-conversa-modal` logo abaixo. */
+.ds-conversas {
+  box-sizing: border-box;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  font-family: var(--font-ui);
+}
+.ds-conversas-cabecalho,
+.ds-conversas-linha {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.3fr) minmax(170px, 1.3fr) minmax(130px, 1fr) minmax(110px, 1fr) minmax(150px, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.ds-conversas-cabecalho {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-strong);
+  border-bottom: 1px solid var(--border);
+}
+.ds-conversas-linha {
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+}
+.ds-conversas-linha:last-child { border-bottom: 0; }
+.ds-conversas-linha:hover,
+.ds-conversas-linha:focus-visible { background: var(--surface-hover); }
+.ds-conversas-linha:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+
+.ds-conversas-nome { font-weight: 600; color: var(--accent-strong); }
+.ds-conversas-whatsapp,
+.ds-conversas-data { color: var(--muted-strong); font-size: 14px; }
+.ds-conversas-data { text-align: right; }
+
+.ds-conversas-bandeira {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 16px;
+  padding: 0 4px;
+  margin-right: var(--space-2);
+  border-radius: 3px;
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  vertical-align: middle;
+}
+
+.ds-conversas-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ds-conversas-status-atendimento { background: var(--info-bg); color: var(--info-text); }
+.ds-conversas-status-concluido { background: var(--accent-tint); color: var(--accent-strong); }
+
+.ds-conversas-atendimento {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+.ds-conversas-atendimento-icone {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+.ds-conversas-atendimento-icone svg { width: 12px; height: 12px; }
+.ds-conversas-atendimento-humano .ds-conversas-atendimento-icone {
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+}
+
+@media (max-width: 640px) {
+  .ds-conversas { border: 0; border-radius: 0; background: transparent; }
+  .ds-conversas-cabecalho { display: none; }
+  .ds-conversas-linha {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "nome nome"
+      "whatsapp whatsapp"
+      "status atendimento"
+      "data data";
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .ds-conversas-linha:last-child { margin-bottom: 0; border-bottom: 1px solid var(--border); }
+  .ds-conversas-nome { grid-area: nome; font-size: 15px; }
+  .ds-conversas-whatsapp { grid-area: whatsapp; }
+  .ds-conversas-status { grid-area: status; }
+  .ds-conversas-atendimento { grid-area: atendimento; justify-self: end; }
+  .ds-conversas-data { grid-area: data; text-align: left; font-size: 12px; }
+  .ds-conversas-data::before { content: "Última conversa: "; color: var(--muted); font-weight: 400; }
+}
+
+/* ---------- Modal de conversa (via KyvvoDS.modalAbrir) ---------- */
+/* Conteúdo pra passar em `KyvvoDS.modalAbrir(html, {classeExtra:
+ * 'ds-modal-card-conversa'})` — sem `titulo` (o cabeçalho com nome +
+ * telefone já faz esse papel). `.ds-conversa-modal-assumir` reaproveita o
+ * Botão do DS (`.ds-btn .ds-btn-secundario .ds-btn-bloco`), não é CSS novo.
+ * Só a lista de mensagens rola — cabeçalho e botão ficam fixos no topo. */
+.ds-modal-card-conversa {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+}
+.ds-modal-card-conversa .ds-modal-corpo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.ds-conversa-modal { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+.ds-conversa-modal-cabecalho { margin: 0 var(--space-6) var(--space-4) 0; }
+.ds-conversa-modal-nome { margin: 0; font-size: 17px; font-weight: 700; color: var(--text); }
+.ds-conversa-modal-whatsapp { margin: 2px 0 0; font-size: 13px; color: var(--muted-strong); }
+.ds-conversa-modal-assumir { margin-bottom: var(--space-4); flex: none; }
+.ds-conversa-modal-mensagens {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding-right: var(--space-1);
+}
+.ds-conversa-modal-msg { display: flex; flex-direction: column; max-width: 82%; margin-bottom: var(--space-3); }
+.ds-conversa-modal-msg-texto {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+.ds-conversa-modal-msg-hora { margin: 2px 2px 0; font-size: 11px; color: var(--muted); }
+.ds-conversa-modal-msg-recebida { margin-right: auto; align-items: flex-start; }
+.ds-conversa-modal-msg-recebida .ds-conversa-modal-msg-texto {
+  background: var(--surface-muted);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.ds-conversa-modal-msg-enviada { margin-left: auto; align-items: flex-end; }
+.ds-conversa-modal-msg-enviada .ds-conversa-modal-msg-texto {
+  background: var(--accent-dark);
+  color: var(--card);
+  border-bottom-right-radius: 4px;
+}
+:root[data-theme="dark"] .ds-conversa-modal-msg-enviada .ds-conversa-modal-msg-texto { color: var(--bg); }
+
+/* ---------- Tela de login ---------- */
+/* Componente novo. Padroniza a tela de entrada de cada produto: sem o
+ * wordmark "Kyvvo" (o logo.svg/logo-dark.svg) — a marca agora é a mesma do
+ * Topbar (`.ds-topbar-marca`/`.ds-topbar-produto`/`.ds-topbar-kyvvo`,
+ * reaproveitados como estão, sem classe nova pra isso), reforçando o mesmo
+ * destaque ao produto em vez da Kyvvo. Reaproveita também o Botão
+ * (`.ds-btn-primario.ds-btn-bloco.ds-btn-lg`) pro "Entrar". O campo usa
+ * `--sunken` (documentado em tokens.css como a superfície certa pro "poço
+ * de um input") em vez do `--input-bg` branco com borda do Formulário —
+ * único traço visual próprio da tela de login. Só CSS, sem `data-ds-*`: o
+ * produto escreve o `<form>` e liga o submit. */
+.ds-login {
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--bg);
+  font-family: var(--font-ui);
+}
+.ds-login-cartao {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), .08);
+}
+.ds-login-marca { margin-bottom: var(--space-6); }
+/* O Topbar esconde `.ds-topbar-kyvvo` em telas estreitas (pouco espaço numa
+ * barra fixa de 64px) — aqui o cartão tem folga de sobra, então essa regra
+ * não faz sentido herdada; mais específica que o `@media` do Topbar, então
+ * ganha dele em qualquer largura. */
+.ds-login-marca .ds-topbar-kyvvo { display: inline-block; }
+.ds-login-form { display: flex; flex-direction: column; gap: var(--space-4); }
+.ds-login-input { background: var(--sunken); border-color: transparent; }
+.ds-login-entrar { margin-top: var(--space-2); }
+.ds-login-rodape { margin: 0; font-size: 14px; color: var(--muted-strong); text-align: center; }
+.ds-login-link { color: var(--accent-strong); font-weight: 600; text-decoration: none; }
+.ds-login-link:hover { text-decoration: underline; }
+.ds-login-link:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+@media (max-width: 480px) {
+  .ds-login { padding: var(--space-4); }
+  .ds-login-cartao { padding: var(--space-5) var(--space-4); }
+}
+
+/* ======================================================================
+ * Acréscimos da v2.19.0: padrão de telas de listagem — Cabeçalho de
+ * página, Alerta, Badge, Switch, Tabela, Paginação, Medidor de uso,
+ * Estado vazio e Detalhe (modal de um registro). Só tokens. Os tons de
+ * texto semântico usam --success-text/--warning-text/--danger-text/
+ * --info-text (novos em tokens.css), que têm contraste seguro sobre o
+ * respectivo --*-bg nos dois temas — nunca use --success/--danger puros
+ * como cor de texto sobre tinta clara.
+ * ====================================================================== */
+
+/* ---------- Cabeçalho de página ---------- */
+.ds-pagina-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  font-family: var(--font-ui);
+}
+.ds-pagina-cab-texto { min-width: 0; }
+.ds-pagina-cab-titulo { margin: 0; font: 700 28px/1.2 var(--font-display); color: var(--text); }
+.ds-pagina-cab-sub { margin: var(--space-1) 0 0; font-size: 14px; line-height: 1.5; color: var(--muted-strong); }
+.ds-pagina-cab-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+
+/* ---------- Alerta ---------- */
+/* Ícone (círculo com símbolo, desenhado em CSS) + corpo + ação opcional. */
+.ds-alerta {
+  --ds-alerta-cor: var(--info);
+  --ds-alerta-rgb: var(--info-rgb);
+  --ds-alerta-texto: var(--info-text);
+  --ds-alerta-simbolo: "i";
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(var(--ds-alerta-rgb), .08);
+  border: 1px solid rgba(var(--ds-alerta-rgb), .32);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-ui);
+  color: var(--text);
+}
+.ds-alerta-info { --ds-alerta-cor: var(--info); --ds-alerta-rgb: var(--info-rgb); --ds-alerta-texto: var(--info-text); --ds-alerta-simbolo: "i"; }
+.ds-alerta-aviso { --ds-alerta-cor: var(--warning); --ds-alerta-rgb: var(--warning-rgb); --ds-alerta-texto: var(--warning-text); --ds-alerta-simbolo: "!"; }
+.ds-alerta-erro { --ds-alerta-cor: var(--danger); --ds-alerta-rgb: var(--danger-rgb); --ds-alerta-texto: var(--danger-text); --ds-alerta-simbolo: "!"; }
+.ds-alerta-sucesso { --ds-alerta-cor: var(--success); --ds-alerta-rgb: var(--success-rgb); --ds-alerta-texto: var(--success-text); --ds-alerta-simbolo: "✓"; }
+.ds-alerta::before {
+  content: var(--ds-alerta-simbolo);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--ds-alerta-rgb), .16);
+  color: var(--ds-alerta-texto);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ds-alerta-corpo { min-width: 0; }
+.ds-alerta-titulo { margin: 0; font-size: 14px; font-weight: 600; line-height: 22px; color: var(--text); }
+.ds-alerta-texto { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted-strong); }
+.ds-alerta-titulo + .ds-alerta-texto { margin-top: 0; }
+.ds-alerta-acao { align-self: center; }
+@media (max-width: 560px) {
+  .ds-alerta { grid-template-columns: auto minmax(0, 1fr); }
+  .ds-alerta-acao { grid-column: 2; justify-self: start; }
+}
+
+/* ---------- Badge (status) ---------- */
+/* Ponto + rótulo. A cor nunca é o único sinal: o rótulo diz o estado. */
+.ds-badge {
+  --ds-badge-bg: var(--surface-muted);
+  --ds-badge-cor: var(--muted-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  background: var(--ds-badge-bg);
+  color: var(--ds-badge-cor);
+  font: 600 12px/1 var(--font-ui);
+  white-space: nowrap;
+}
+.ds-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  flex: none;
+}
+.ds-badge-sem-ponto::before { display: none; }
+.ds-badge-sucesso { --ds-badge-bg: var(--success-bg); --ds-badge-cor: var(--success-text); }
+.ds-badge-aviso { --ds-badge-bg: var(--warning-bg); --ds-badge-cor: var(--warning-text); }
+.ds-badge-erro { --ds-badge-bg: var(--danger-bg); --ds-badge-cor: var(--danger-text); }
+.ds-badge-info { --ds-badge-bg: var(--info-bg); --ds-badge-cor: var(--info-text); }
+.ds-badge-marca { --ds-badge-bg: var(--accent-tint); --ds-badge-cor: var(--accent-strong); }
+.ds-badge-sm { height: 20px; padding: 0 8px; font-size: 11px; }
+
+/* ---------- Switch ---------- */
+/* <label class="ds-switch"><input type="checkbox" role="switch"><span class="ds-switch-trilho"></span>
+ * <span class="ds-switch-rotulo">…</span></label> — o input fica
+ * visualmente escondido mas continua focável e lido por leitor de tela. */
+.ds-switch { position: relative; display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; font: 14px/1.2 var(--font-ui); color: var(--text); }
+.ds-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.ds-switch-trilho {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  transition: background-color 0.15s ease;
+}
+.ds-switch-trilho::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), .25);
+  transition: transform 0.15s ease;
+}
+.ds-switch input:checked + .ds-switch-trilho { background: var(--accent-dark); }
+.ds-switch input:checked + .ds-switch-trilho::after { transform: translateX(16px); }
+.ds-switch input:focus-visible + .ds-switch-trilho { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+.ds-switch input:disabled { cursor: not-allowed; }
+.ds-switch:has(input:disabled) { cursor: not-allowed; color: var(--text-faint); }
+.ds-switch input:disabled + .ds-switch-trilho { opacity: .5; }
+@media (prefers-reduced-motion: reduce) {
+  .ds-switch-trilho, .ds-switch-trilho::after { transition: none; }
+}
+
+/* ---------- Tabela ---------- */
+/* Cartão com barra de filtros opcional no topo, cabeçalho, linhas e rodapé
+ * (paginação). Marcação com role="table"/"row"/"cell" em <div>, como a
+ * Lista de conversas, pra virar cartão no mobile. Colunas: o produto
+ * define `--ds-colunas` (lista de larguras do grid) no próprio elemento. */
+.ds-tabela {
+  --ds-colunas: repeat(4, minmax(0, 1fr));
+  box-sizing: border-box;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  font-family: var(--font-ui);
+  color: var(--text);
+}
+.ds-tabela .ds-filtros { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.ds-tabela-cabecalho,
+.ds-tabela-linha {
+  display: grid;
+  grid-template-columns: var(--ds-colunas);
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+}
+.ds-tabela-cabecalho {
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--muted-strong);
+}
+.ds-tabela-linha { min-height: 56px; box-sizing: border-box; border-bottom: 1px solid var(--border); font-size: 14px; }
+.ds-tabela-linha:last-child { border-bottom: 0; }
+.ds-tabela-linha > [role="cell"] { min-width: 0; }
+.ds-tabela-linha-clicavel { cursor: pointer; }
+.ds-tabela-linha-clicavel:hover,
+.ds-tabela-linha-clicavel:focus-visible { background: var(--surface-hover); }
+.ds-tabela-linha-clicavel:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: -2px; }
+.ds-tabela-primario { display: block; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-tabela-secundario { display: block; margin-top: 2px; font-size: 12px; color: var(--muted-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-tabela-mudo { color: var(--muted-strong); }
+.ds-tabela-acoes { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.ds-tabela-cabecalho .ds-tabela-acoes { justify-content: flex-end; }
+/* Linha extra ocupando a largura toda, logo abaixo das células (ex.: o
+ * motivo de uma falha) */
+.ds-tabela-nota { grid-column: 1 / -1; margin-top: calc(var(--space-1) * -1); font-size: 12px; color: var(--muted-strong); }
+.ds-tabela .ds-filtros .ds-select { flex: 0 1 200px; min-width: 140px; }
+@media (max-width: 640px) { .ds-tabela .ds-filtros .ds-select, .ds-tabela .ds-filtros .ds-pesquisa { flex: 1 1 100%; max-width: none; } }
+.ds-tabela-rodape { padding: var(--space-3) var(--space-5); border-top: 1px solid var(--border); background: var(--card); }
+@media (max-width: 640px) {
+  .ds-tabela-cabecalho { display: none; }
+  .ds-tabela-linha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); padding: var(--space-4); }
+  .ds-tabela-linha > [role="cell"] { flex: 1 1 100%; }
+  .ds-tabela-linha > [role="cell"][data-rotulo]::before {
+    content: attr(data-rotulo) ": ";
+    font-size: 12px;
+    color: var(--muted-strong);
+  }
+  .ds-tabela-linha > .ds-tabela-acoes { flex: 1 1 100%; justify-content: flex-start; }
+  .ds-tabela-rodape { padding: var(--space-3) var(--space-4); }
+}
+
+/* ---------- Paginação ---------- */
+/* "1–10 de 36", botões de página com reticências, anterior/próxima e
+ * (opcional) quantidade por página. Montada pelo components.js a partir de
+ * data-ds-total / data-ds-tamanho / data-ds-pagina. */
+.ds-paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted-strong);
+}
+.ds-paginacao-resumo { margin-right: auto; }
+.ds-paginacao-tamanho { display: inline-flex; align-items: center; gap: var(--space-2); }
+.ds-paginacao-tamanho select {
+  height: 32px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.ds-paginacao-nav { display: flex; align-items: center; gap: var(--space-1); }
+.ds-paginacao-btn {
+  box-sizing: border-box;
+  min-width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+}
+.ds-paginacao-btn:hover:not(:disabled):not([aria-current="page"]) { background: var(--surface-hover); }
+.ds-paginacao-btn[aria-current="page"] { background: var(--accent-tint); color: var(--accent-strong); cursor: default; }
+.ds-paginacao-btn:disabled { color: var(--text-faint); cursor: not-allowed; }
+.ds-paginacao-btn:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 1px; }
+.ds-paginacao-reticencias { min-width: 24px; text-align: center; color: var(--text-faint); }
+@media (max-width: 560px) {
+  .ds-paginacao-nav .ds-paginacao-btn:not([aria-current="page"]):not(.ds-paginacao-ant):not(.ds-paginacao-prox) { display: none; }
+  .ds-paginacao-reticencias { display: none; }
+}
+
+/* ---------- Medidor de uso ---------- */
+/* `data-ds-medidor` + `data-ds-usado`/`data-ds-limite`: o components.js
+ * calcula a porcentagem e troca o tom (>= 80% aviso, >= 100% perigo). */
+.ds-medidor {
+  --ds-medidor-pct: 0%;
+  --ds-medidor-cor: var(--accent-dark);
+  box-sizing: border-box;
+  padding: var(--space-4) var(--space-5);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-ui);
+  color: var(--text);
+}
+.ds-medidor-aviso { --ds-medidor-cor: var(--warning); }
+.ds-medidor-perigo { --ds-medidor-cor: var(--danger); }
+.ds-medidor-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.ds-medidor-rotulo { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted-strong); }
+.ds-medidor-valor { margin: var(--space-1) 0 var(--space-3); font: 700 28px/1.1 var(--font-display); color: var(--text); }
+.ds-medidor-limite { font-size: 16px; font-weight: 500; color: var(--muted-strong); }
+.ds-medidor-trilho { height: 8px; border-radius: var(--radius-full); background: var(--surface-muted); overflow: hidden; }
+.ds-medidor-barra { width: var(--ds-medidor-pct); height: 100%; border-radius: var(--radius-full); background: var(--ds-medidor-cor); transition: width 0.3s ease; }
+.ds-medidor-legenda { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); margin: var(--space-2) 0 0; font-size: 12px; color: var(--muted-strong); }
+@media (prefers-reduced-motion: reduce) { .ds-medidor-barra { transition: none; } }
+
+/* ---------- Estado vazio ---------- */
+.ds-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  font-family: var(--font-ui);
+}
+.ds-vazio-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+.ds-vazio-icone svg { width: 24px; height: 24px; }
+.ds-vazio-titulo { margin: 0; font-size: 16px; font-weight: 600; color: var(--text); }
+.ds-vazio-texto { margin: 0; max-width: 360px; font-size: 14px; line-height: 1.5; color: var(--muted-strong); }
+.ds-vazio .ds-btn { margin-top: var(--space-3); }
+
+/* ---------- Detalhe de registro (dentro do KyvvoDS.modalAbrir) ---------- */
+/* Cabeçalho (título + badge), grade de pares rótulo/valor, a mensagem
+ * completa num balão e, se houver, o motivo da falha num .ds-alerta.
+ * Use `classeExtra: 'ds-modal-card-detalhe'` pro cartão mais largo. */
+.ds-modal-card-detalhe { max-width: 560px; }
+.ds-detalhe { display: flex; flex-direction: column; gap: var(--space-5); font-family: var(--font-ui); }
+.ds-detalhe-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-right: var(--space-6); }
+.ds-detalhe-titulo { margin: 0; font-size: 18px; font-weight: 700; color: var(--text); }
+.ds-detalhe-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-5); margin: 0; }
+.ds-detalhe-item { min-width: 0; }
+.ds-detalhe-item dt { margin: 0 0 2px; font-size: 12px; font-weight: 600; color: var(--muted-strong); }
+.ds-detalhe-item dd { margin: 0; font-size: 14px; color: var(--text); overflow-wrap: anywhere; }
+.ds-detalhe-item-largo { grid-column: 1 / -1; }
+.ds-detalhe-secao { margin: 0 0 var(--space-2); font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted-strong); }
+.ds-mensagem { margin: 0; padding: var(--space-4); border-radius: var(--radius-md); background: var(--surface-muted); }
+.ds-mensagem-balao {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  max-height: 280px;
+  overflow-y: auto;
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-md);
+  background: var(--card);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ds-mensagem-rodape { margin: var(--space-2) 0 0; font-size: 12px; color: var(--muted-strong); text-align: right; }
+.ds-mensagem-vazia { color: var(--muted-strong); font-style: italic; }
+@media (max-width: 480px) {
+  .ds-detalhe-grade { grid-template-columns: minmax(0, 1fr); }
+}
+
+</style>
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-ui); color: var(--text); }
+  main { max-width: 1120px; margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); }
+  .pilha { display: flex; flex-direction: column; gap: var(--space-4); }
+</style>
+</head>
+<body>
+<main>
+  <header class="ds-pagina-cab">
+    <div class="ds-pagina-cab-texto">
+      <h1 class="ds-pagina-cab-titulo">Automações</h1>
+    </div>
+    <div class="ds-pagina-cab-acoes">
+      <button type="button" class="ds-btn ds-btn-primario" id="nova">+ Nova automação</button>
+    </div>
+  </header>
+
+  <div class="ds-abas" data-ds-abas>
+    <div class="ds-abas-lista" role="tablist">
+      <button class="ds-aba" role="tab" id="aba-a" aria-controls="p-a" aria-selected="true">Automações</button>
+      <button class="ds-aba" role="tab" id="aba-d" aria-controls="p-d" aria-selected="false">Disparos <span class="ds-aba-contagem" id="cont-d">0</span></button>
+    </div>
+
+    <section class="ds-abas-painel pilha" role="tabpanel" id="p-a" aria-labelledby="aba-a">
+      <div class="ds-alerta ds-alerta-aviso" role="status">
+        <div class="ds-alerta-corpo">
+          <p class="ds-alerta-titulo">Nenhum modelo de disparo aprovado na conta do WhatsApp</p>
+          <p class="ds-alerta-texto">Automações sem modelo ficam pausadas até você aprovar um modelo na Meta.</p>
+        </div>
+        <a class="ds-btn ds-btn-secundario ds-btn-sm ds-alerta-acao" href="#">Ver como aprovar</a>
+      </div>
+
+      <div class="ds-tabela" role="table" aria-label="Automações" style="--ds-colunas: minmax(0,1.6fr) minmax(0,1.4fr) 110px 48px">
+        <div class="ds-filtros">
+          <div class="ds-pesquisa">
+            <svg class="ds-pesquisa-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="ds-pesquisa-input" type="search" placeholder="Buscar automação" aria-label="Buscar automação">
+          </div>
+        </div>
+        <div class="ds-tabela-cabecalho" role="row">
+          <span role="columnheader">Nome</span><span role="columnheader">Gatilho</span><span role="columnheader">Ativa</span><span role="columnheader"></span>
+        </div>
+        <div id="auto-linhas"></div>
+      </div>
+    </section>
+
+    <section class="ds-abas-painel pilha" role="tabpanel" id="p-d" aria-labelledby="aba-d" hidden>
+      <div class="ds-medidor" data-ds-medidor data-ds-usado="0" data-ds-limite="200">
+        <div class="ds-medidor-cab">
+          <p class="ds-medidor-rotulo">Disparos de WhatsApp este mês · plano Smart</p>
+          <a class="ds-btn ds-btn-ghost ds-btn-sm" href="#">Ver planos</a>
+        </div>
+        <p class="ds-medidor-valor"><span class="ds-medidor-usado">0</span> <span class="ds-medidor-limite">de <span class="ds-medidor-limite-valor">200</span></span></p>
+        <div class="ds-medidor-trilho"><div class="ds-medidor-barra"></div></div>
+        <p class="ds-medidor-legenda"><span>Renova em 01/11</span><span>Falhas não consomem o limite</span></p>
+      </div>
+
+      <div class="ds-tabela" role="table" aria-label="Disparos" style="--ds-colunas: 130px minmax(0,1.2fr) minmax(0,1.2fr) minmax(0,1.3fr) 130px">
+        <div class="ds-filtros" data-ds-filtros>
+          <div class="ds-pesquisa">
+            <svg class="ds-pesquisa-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="ds-pesquisa-input" type="search" id="f-busca" placeholder="Buscar cliente ou número" aria-label="Buscar cliente ou número">
+          </div>
+          <div class="ds-select"><select id="f-status" aria-label="Status">
+            <option value="">Todos os status</option><option value="enviado">Enviado</option><option value="entregue">Entregue</option><option value="lido">Lido</option><option value="erro">Falhou</option>
+          </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+          <div class="ds-select"><select id="f-auto" aria-label="Automação">
+            <option value="">Todas as automações</option><option>Clientes inativos</option><option>Confirmação de agenda</option><option>Aniversário do cliente</option>
+          </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+          <div class="ds-select"><select id="f-periodo" aria-label="Período">
+            <option value="">Todo o período</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option>
+          </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+          <div class="ds-filtros-fim"><button type="button" class="ds-btn ds-btn-ghost ds-btn-sm" id="f-limpar" hidden>Limpar filtros</button></div>
+        </div>
+        <div class="ds-tabela-cabecalho" role="row">
+          <span role="columnheader">Quando</span><span role="columnheader">Cliente</span><span role="columnheader">Número</span><span role="columnheader">Modelo</span><span role="columnheader">Status</span>
+        </div>
+        <div id="disp-linhas"></div>
+        <div class="ds-tabela-rodape"><nav data-ds-paginacao data-ds-total="0" data-ds-tamanho="10" data-ds-tamanhos="10,25,50" id="pag"></nav></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+/* @kyvvohq/design-system — hidratação dos componentes que precisam de
+ * marcação ou comportamento (não só CSS). Script clássico, sem
+ * módulo/bundler — expõe `window.KyvvoDS` e auto-hidrata elementos
+ * `data-ds-*` no load.
+ *
+ * Uso:
+ *   <link rel="stylesheet" href="/ds/components.css">
+ *   <script src="/ds/components.js">
+ *   ...
+ *   <footer data-ds-rodape data-ds-produto="Studio"></footer>   (vira o rodapé completo)
+ *   <nav data-ds-menu>...</nav>                                 (liga o recolher e os submenus)
+ *   <header class="ds-topbar">...</header>                      (só CSS; sem data-ds-*)
+ *   <div class="ds-conversas" role="table">...</div>            (lista; abre o modal "na mão")
+ *   KyvvoDS.modalAbrir(htmlDaConversa, {classeExtra: 'ds-modal-card-conversa'})
+ *   <div class="ds-login">...</div>                             (só CSS; sem data-ds-*)
+ *
+ * Carregue depois de tokens.css/components.css. A ordem em relação ao JS
+ * do produto (app.js/shell.js) não importa — a hidratação é no
+ * DOMContentLoaded.
+ *
+ * Acréscimos da v2.6.0: o nome do produto
+ * no rodapé ("Kyvvo powered by" + logo), o Menu lateral, o menu de ações
+ * ("..."), o filtro dropdown, a barra de pesquisa, a barra de filtros e as
+ * máscaras de campo (data-ds-mascara).
+ * Acréscimo da v2.7.0: as abas (data-ds-abas).
+ * Acréscimo da v2.8.0: o carrossel (data-ds-carrossel).
+ * Acréscimo da v2.9.0: o modal (KyvvoDS.modalAbrir/modalFechar) e a barra de
+ * seleção (KyvvoDS.selecaoBarraAtualizar) — ao contrário dos outros
+ * componentes, esses dois não hidratam marcação `data-ds-*` existente no
+ * load; são chamados diretamente pelo JS do produto (não há nada pra
+ * `iniciar()` fazer com eles).
+ * Acréscimo da v2.11.0: o balão de notificações (`.ds-notificacoes`,
+ * KyvvoDS.notificacoesAtualizar) — mesmo princípio de posicionamento/
+ * fechamento do menu de ações (.ds-acoes), mas sem `data-ds-*` pra hidratar:
+ * o produto monta a marcação e chama a função diretamente, igual ao modal.
+ * Revisão da v2.12.0: Menu lateral sem logo/marca (produto não deve mais
+ * montar `.ds-menu-topo`/`.ds-menu-marca`), botão de recolher flutuante na
+ * borda direita e seta de grupo girando 90° (não 180°) ao abrir — só CSS,
+ * a lógica de hidratação abaixo não mudou.
+ * Acréscimo da v2.16.0: o topbar (`.ds-topbar`) — marca do produto (letras
+ * em acento + sublinhado) à esquerda, sino de notificações (ícone em
+ * acento aqui) + avatar + nome à direita. Só CSS, sem `data-ds-*` e sem
+ * função nova: reaproveita o `.ds-notificacoes` que já existe.
+ * Acréscimo da v2.17.0: a lista de conversas (`.ds-conversas`, marcação
+ * `role="table"/"row"/"cell"` — não `<table>`, pra virar cartão no mobile
+ * sem as regras de tabela atrapalhar) e o modal de conversa
+ * (`.ds-conversa-modal`). Nenhuma função nova: a linha é clicável por
+ * convenção (o produto escuta o clique e chama `KyvvoDS.modalAbrir` com o
+ * conteúdo de `.ds-conversa-modal`, passando `classeExtra:
+ * 'ds-modal-card-conversa'` pra só a lista de mensagens rolar). Reaproveita
+ * o Botão (`.ds-btn-secundario.ds-btn-bloco`) pro "Assumir atendimento".
+ * Acréscimo da v2.18.0: a tela de login (`.ds-login`) — sem função nova e
+ * sem `data-ds-*`: reaproveita a marca do Topbar (`.ds-topbar-marca`) e o
+ * Botão (`.ds-btn-primario.ds-btn-bloco.ds-btn-lg`) como já existiam.
+ * Acréscimo da v2.19.0: paginação (data-ds-paginacao,
+ * KyvvoDS.paginacaoAtualizar), medidor de uso (data-ds-medidor,
+ * KyvvoDS.medidorAtualizar), KyvvoDS.dataRelativa/dataCompleta e Enter/Espaço
+ * em `.ds-tabela-linha-clicavel`. Cabeçalho de página, alerta, badge,
+ * switch, tabela, estado vazio e detalhe são só CSS.
+ */
+(function () {
+  'use strict';
+
+  var DS_BASE = '/ds';
+
+  function logoSrc() {
+    var escuro = document.documentElement.getAttribute('data-theme') === 'dark';
+    return DS_BASE + (escuro ? '/logo-dark.svg' : '/logo.svg');
+  }
+
+  function escapar(texto) {
+    return String(texto)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ---------- Rodapé de área logada ----------
+  // "© {ano} {produto} Kyvvo powered by {logo}. Todos os direitos reservados."
+  // O segundo "Kyvvo" é o próprio logo (img com alt="Kyvvo"). Sem produto,
+  // a linha começa em "© {ano} Kyvvo powered by".
+  function rodapeLogadoHtml(produto) {
+    var ano = new Date().getFullYear();
+    var nome = produto ? escapar(produto) + ' ' : '';
+    return (
+      '<span>© ' + ano + ' ' + nome + 'Kyvvo powered by ' +
+      '<img src="' + logoSrc() + '" alt="Kyvvo" data-ds-logo>' +
+      '. Todos os direitos reservados.</span>'
+    );
+  }
+
+  function hidratarRodapes() {
+    var els = document.querySelectorAll('[data-ds-rodape]');
+    for (var i = 0; i < els.length; i++) {
+      els[i].classList.add('ds-rodape');
+      els[i].innerHTML = rodapeLogadoHtml(els[i].getAttribute('data-ds-produto'));
+    }
+  }
+
+  // Mantém o logo (rodapé e qualquer [data-ds-logo]) no arquivo certo pro
+  // tema atual — o produto só precisa trocar `data-theme` no <html>.
+  function sincronizarLogos() {
+    var src = logoSrc();
+    var imgs = document.querySelectorAll('[data-ds-logo]');
+    for (var i = 0; i < imgs.length; i++) {
+      if (imgs[i].getAttribute('src') !== src) imgs[i].src = src;
+    }
+  }
+
+  // ---------- Menu lateral ----------
+  // Estado recolhido = classe `ds-menu-recolhido` no <nav class="ds-menu">.
+  // Grupo aberto = aria-expanded="true" no botão do grupo. Da v2.12.0: sem
+  // `.ds-menu-topo`/`.ds-menu-marca` (removidos do componente — o produto não
+  // deve mais colocar logo no menu) e o botão de recolher (`.ds-menu-toggle`)
+  // é posicionado pelo CSS (flutuante, borda direita, centralizado
+  // verticalmente); nada muda aqui na hidratação.
+  function rotuloDe(link) {
+    var rotulo = link.querySelector('.ds-menu-rotulo');
+    return rotulo ? rotulo.textContent.replace(/\s+/g, ' ').trim() : '';
+  }
+
+  // Alinha o botão de recolher (aria-label, aria-expanded) e o `title` dos
+  // itens: com só os ícones visíveis, o título diz o que cada um é.
+  function sincronizarMenu(menu) {
+    var recolhido = menu.classList.contains('ds-menu-recolhido');
+    var toggle = menu.querySelector('.ds-menu-toggle');
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', recolhido ? 'false' : 'true');
+      toggle.setAttribute('aria-label', recolhido ? 'Mostrar menu' : 'Ocultar menu');
+    }
+    var links = menu.querySelectorAll('.ds-menu-link');
+    for (var i = 0; i < links.length; i++) {
+      if (recolhido) links[i].setAttribute('title', rotuloDe(links[i]));
+      else links[i].removeAttribute('title');
+    }
+  }
+
+  // Recolhe ou mostra o menu. Sem o segundo argumento, inverte o estado.
+  // Devolve o estado final (true = recolhido) e dispara `ds-menu-alternar`
+  // no <nav>, com `detail.recolhido`, para o produto guardar a escolha.
+  function menuAlternar(menu, recolher) {
+    if (!menu) return false;
+    var alvo = typeof recolher === 'boolean' ? recolher : !menu.classList.contains('ds-menu-recolhido');
+    menu.classList.toggle('ds-menu-recolhido', alvo);
+    sincronizarMenu(menu);
+    menu.dispatchEvent(new CustomEvent('ds-menu-alternar', { bubbles: true, detail: { recolhido: alvo } }));
+    return alvo;
+  }
+
+  // Abre ou fecha o submenu de um grupo. Com o menu recolhido, o ícone do
+  // grupo reabre o menu já com o grupo aberto (o submenu não cabe em 72px).
+  function grupoAlternar(botao) {
+    var menu = botao.closest('.ds-menu');
+    if (menu && menu.classList.contains('ds-menu-recolhido')) {
+      botao.setAttribute('aria-expanded', 'true');
+      menuAlternar(menu, false);
+      return;
+    }
+    botao.setAttribute('aria-expanded', botao.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+  }
+
+  function hidratarMenus() {
+    var els = document.querySelectorAll('[data-ds-menu]');
+    for (var i = 0; i < els.length; i++) {
+      var menu = els[i];
+      menu.classList.add('ds-menu');
+      if (menu.hasAttribute('data-ds-menu-recolhido')) menu.classList.add('ds-menu-recolhido');
+      // Grupo com subitem ativo já nasce aberto.
+      var ativos = menu.querySelectorAll('.ds-menu-sublink-ativo');
+      for (var j = 0; j < ativos.length; j++) {
+        var grupo = ativos[j].closest('.ds-menu-grupo');
+        var botao = grupo && grupo.querySelector('.ds-menu-grupo-botao');
+        if (botao) botao.setAttribute('aria-expanded', 'true');
+      }
+      sincronizarMenu(menu);
+    }
+  }
+
+  // Um só ouvinte no documento serve todo menu, também os montados depois.
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var toggle = alvo.closest('.ds-menu-toggle');
+    if (toggle) {
+      menuAlternar(toggle.closest('.ds-menu'));
+      return;
+    }
+    var grupo = alvo.closest('.ds-menu-grupo-botao');
+    if (grupo) grupoAlternar(grupo);
+  });
+
+  // ---------- Menu de ações ("...") ----------
+  // Marcação: <span class="ds-acoes"> <button class="ds-acoes-btn" aria-haspopup="menu"
+  // aria-expanded="false"> + <div class="ds-acoes-menu" role="menu" hidden> com
+  // <button role="menuitem" class="ds-acoes-item" data-acao="editar">. O menu é
+  // `position: fixed`: o script o posiciona junto do botão (vira para cima se
+  // faltar espaço embaixo) e o fecha ao clicar fora, rolar, redimensionar ou Esc.
+  // Escolher um item dispara `ds-acoes-escolher` no `.ds-acoes` (com bubbles),
+  // com `detail.acao` = data-acao do item. Os cliques dentro de `.ds-acoes` não
+  // sobem até o card: clicar em "..." não abre o agendamento.
+  var acoesAberto = null;
+
+  function acoesFechar(devolverFoco) {
+    if (!acoesAberto) return;
+    var aberto = acoesAberto;
+    acoesAberto = null;
+    aberto.menu.hidden = true;
+    aberto.btn.setAttribute('aria-expanded', 'false');
+    if (devolverFoco) aberto.btn.focus();
+  }
+
+  function acoesItens(menu) {
+    return Array.prototype.slice.call(menu.querySelectorAll('.ds-acoes-item:not(:disabled)'));
+  }
+
+  function acoesAbrir(btn) {
+    var menu = btn.parentNode && btn.parentNode.querySelector('.ds-acoes-menu');
+    if (!menu) return;
+    acoesFechar(false);
+    menu.style.visibility = 'hidden';
+    menu.hidden = false;
+    var r = btn.getBoundingClientRect();
+    var w = menu.offsetWidth;
+    var h = menu.offsetHeight;
+    var esq = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
+    var topo = r.bottom + 4;
+    if (topo + h > window.innerHeight - 8) topo = Math.max(8, r.top - h - 4);
+    menu.style.left = esq + 'px';
+    menu.style.top = topo + 'px';
+    menu.style.visibility = '';
+    btn.setAttribute('aria-expanded', 'true');
+    acoesAberto = { btn: btn, menu: menu };
+    var itens = acoesItens(menu);
+    if (itens.length) itens[0].focus();
+  }
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var caixa = alvo.closest('.ds-acoes');
+    if (!caixa) {
+      if (acoesAberto) acoesFechar(false);
+      return;
+    }
+    e.stopPropagation();
+    var item = alvo.closest('.ds-acoes-item');
+    if (item) {
+      var acao = item.getAttribute('data-acao');
+      acoesFechar(true);
+      caixa.dispatchEvent(new CustomEvent('ds-acoes-escolher', { bubbles: true, detail: { acao: acao, item: item } }));
+      return;
+    }
+    var btn = alvo.closest('.ds-acoes-btn');
+    if (btn) {
+      if (acoesAberto && acoesAberto.btn === btn) acoesFechar(false);
+      else acoesAbrir(btn);
+    }
+  }, true);
+
+  document.addEventListener('keydown', function (e) {
+    if (!acoesAberto) return;
+    var itens = acoesItens(acoesAberto.menu);
+    var i = itens.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); acoesFechar(true); }
+    else if (e.key === 'Tab') acoesFechar(false);
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (itens.length) itens[(i + 1) % itens.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (itens.length) itens[(i - 1 + itens.length) % itens.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); if (itens.length) itens[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); if (itens.length) itens[itens.length - 1].focus(); }
+  });
+  window.addEventListener('scroll', function () { acoesFechar(false); }, true);
+  window.addEventListener('resize', function () { acoesFechar(false); });
+
+  // ---------- Notificações (balão) ----------
+  // Marcação: <div class="ds-notificacoes"> <button class="ds-notificacoes-btn"
+  // aria-haspopup="menu" aria-expanded="false"> (ícone de sino próprio, o
+  // componente não fornece ícone) + <span class="ds-notificacoes-contagem"
+  // hidden> + <div class="ds-notificacoes-painel" role="menu" hidden> com o
+  // conteúdo que o produto quiser dentro. Mesmo princípio de posicionamento
+  // (`position: fixed`, vira pra cima se faltar espaço embaixo) e fechamento
+  // (clique fora/Esc/scroll/resize) do menu de ações acima — só que o
+  // componente não sabe o que é uma notificação, só abre/fecha o painel e
+  // atualiza a contagem via KyvvoDS.notificacoesAtualizar; quem preenche o
+  // conteúdo e liga os cliques dos itens é o produto.
+  var notificacoesAberto = null;
+
+  function notificacoesFechar(devolverFoco) {
+    if (!notificacoesAberto) return;
+    var aberto = notificacoesAberto;
+    notificacoesAberto = null;
+    aberto.painel.hidden = true;
+    aberto.btn.setAttribute('aria-expanded', 'false');
+    if (devolverFoco) aberto.btn.focus();
+  }
+
+  function notificacoesAbrir(btn) {
+    var caixa = btn.closest('.ds-notificacoes');
+    var painel = caixa && caixa.querySelector('.ds-notificacoes-painel');
+    if (!painel) return;
+    notificacoesFechar(false);
+    acoesFechar(false);
+    painel.style.visibility = 'hidden';
+    painel.hidden = false;
+    var r = btn.getBoundingClientRect();
+    var w = painel.offsetWidth;
+    var h = painel.offsetHeight;
+    var esq = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
+    var topo = r.bottom + 4;
+    if (topo + h > window.innerHeight - 8) topo = Math.max(8, r.top - h - 4);
+    painel.style.left = esq + 'px';
+    painel.style.top = topo + 'px';
+    painel.style.visibility = '';
+    btn.setAttribute('aria-expanded', 'true');
+    notificacoesAberto = { btn: btn, painel: painel };
+  }
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var caixa = alvo.closest('.ds-notificacoes');
+    if (!caixa) {
+      if (notificacoesAberto) notificacoesFechar(false);
+      return;
+    }
+    var btn = alvo.closest('.ds-notificacoes-btn');
+    if (btn) {
+      e.stopPropagation();
+      if (notificacoesAberto && notificacoesAberto.btn === btn) notificacoesFechar(false);
+      else notificacoesAbrir(btn);
+    }
+  }, true);
+
+  document.addEventListener('keydown', function (e) {
+    if (!notificacoesAberto) return;
+    if (e.key === 'Escape') { e.preventDefault(); notificacoesFechar(true); }
+  });
+  window.addEventListener('scroll', function () { notificacoesFechar(false); }, true);
+  window.addEventListener('resize', function () { notificacoesFechar(false); });
+
+  // KyvvoDS.notificacoesAtualizar(el, quantidade) — `el` é o `.ds-notificacoes`
+  // já presente na marcação do produto (pode haver mais de uma instância na
+  // página). Só mostra/esconde e escreve o número na pílula; o conteúdo do
+  // painel é preenchido pelo produto à parte.
+  function notificacoesAtualizar(el, quantidade) {
+    if (!el) return;
+    var pilula = el.querySelector('.ds-notificacoes-contagem');
+    if (pilula) {
+      pilula.hidden = !quantidade;
+      pilula.textContent = quantidade > 99 ? '99+' : String(quantidade);
+    }
+    el.dispatchEvent(new CustomEvent('ds-notificacoes-alterar', { bubbles: true, detail: { quantidade: quantidade } }));
+  }
+
+  // ---------- Filtro dropdown ----------
+  // <div class="ds-dropdown" data-ds-dropdown="multi|unico" data-ds-nome="status"
+  //      data-ds-dropdown-rotulo="Status"> com o botão `.ds-dropdown-btn` e o painel
+  // `.ds-dropdown-painel` (`<ul role="listbox">` de `<li role="option" data-valor>`).
+  // Um `data-valor=""` é a opção "Todos" (sem filtro). Dispara
+  // `ds-dropdown-alterar` (bubbles) com `detail.valores` (lista de data-valor).
+  function ddOpcoes(dd) {
+    return Array.prototype.slice.call(dd.querySelectorAll('.ds-dropdown-opcao'));
+  }
+
+  function ddValores(dd) {
+    var v = [];
+    ddOpcoes(dd).forEach(function (o) {
+      var valor = o.getAttribute('data-valor') || '';
+      if (o.getAttribute('aria-selected') === 'true' && valor !== '') v.push(valor);
+    });
+    return v;
+  }
+
+  function ddAtualizar(dd) {
+    var unico = dd.getAttribute('data-ds-dropdown') === 'unico';
+    var marcadas = ddOpcoes(dd).filter(function (o) { return o.getAttribute('aria-selected') === 'true' && (o.getAttribute('data-valor') || '') !== ''; });
+    var rotulo = dd.querySelector('.ds-dropdown-rotulo');
+    var contagem = dd.querySelector('.ds-dropdown-contagem');
+    var padrao = dd.getAttribute('data-ds-dropdown-rotulo') || '';
+    if (rotulo) {
+      if (unico && marcadas.length) {
+        var t = marcadas[0].querySelector('.ds-dropdown-texto');
+        rotulo.textContent = (padrao ? padrao + ': ' : '') + (t ? t.textContent : marcadas[0].textContent).trim();
+      } else {
+        rotulo.textContent = padrao;
+      }
+    }
+    if (contagem) {
+      contagem.hidden = unico || marcadas.length === 0;
+      contagem.textContent = String(marcadas.length);
+    }
+    dd.classList.toggle('ds-dropdown-ativo', marcadas.length > 0);
+  }
+
+  function ddDefinir(dd, valores, silencioso) {
+    var unico = dd.getAttribute('data-ds-dropdown') === 'unico';
+    var lista = (valores || []).map(String);
+    ddOpcoes(dd).forEach(function (o) {
+      var valor = o.getAttribute('data-valor') || '';
+      var on = lista.indexOf(valor) !== -1 || (unico && lista.length === 0 && valor === '');
+      o.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    ddAtualizar(dd);
+    if (!silencioso) dd.dispatchEvent(new CustomEvent('ds-dropdown-alterar', { bubbles: true, detail: { valores: ddValores(dd) } }));
+  }
+
+  function ddFechar(dd, devolverFoco) {
+    var btn = dd.querySelector('.ds-dropdown-btn');
+    var painel = dd.querySelector('.ds-dropdown-painel');
+    if (!painel || painel.hidden) return;
+    painel.hidden = true;
+    if (btn) {
+      btn.setAttribute('aria-expanded', 'false');
+      if (devolverFoco) btn.focus();
+    }
+  }
+
+  function ddFecharOutros(exceto) {
+    var todos = document.querySelectorAll('.ds-dropdown');
+    for (var i = 0; i < todos.length; i++) if (todos[i] !== exceto) ddFechar(todos[i], false);
+  }
+
+  function ddAbrir(dd) {
+    var btn = dd.querySelector('.ds-dropdown-btn');
+    var painel = dd.querySelector('.ds-dropdown-painel');
+    if (!btn || !painel) return;
+    ddFecharOutros(dd);
+    painel.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    var opcoes = ddOpcoes(dd);
+    var alvo = opcoes.filter(function (o) { return o.getAttribute('aria-selected') === 'true'; })[0] || opcoes[0];
+    if (alvo) alvo.focus();
+  }
+
+  function ddEscolher(dd, opcao) {
+    var unico = dd.getAttribute('data-ds-dropdown') === 'unico';
+    var valor = opcao.getAttribute('data-valor') || '';
+    if (unico) {
+      ddDefinir(dd, valor === '' ? [] : [valor]);
+      ddFechar(dd, true);
+    } else if (valor === '') {
+      ddDefinir(dd, []);
+    } else {
+      var atual = ddValores(dd);
+      var i = atual.indexOf(valor);
+      if (i === -1) atual.push(valor); else atual.splice(i, 1);
+      ddDefinir(dd, atual);
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var dd = alvo.closest('.ds-dropdown');
+    if (!dd) { ddFecharOutros(null); return; }
+    var opcao = alvo.closest('.ds-dropdown-opcao');
+    if (opcao) { ddEscolher(dd, opcao); return; }
+    if (alvo.closest('[data-ds-dropdown-limpar]')) { ddDefinir(dd, []); return; }
+    if (alvo.closest('.ds-dropdown-btn')) {
+      var painel = dd.querySelector('.ds-dropdown-painel');
+      if (painel && !painel.hidden) ddFechar(dd, false); else ddAbrir(dd);
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    var dd = alvo && alvo.closest('.ds-dropdown');
+    if (!dd) return;
+    var painel = dd.querySelector('.ds-dropdown-painel');
+    var aberto = painel && !painel.hidden;
+    var opcoes = ddOpcoes(dd);
+    var i = opcoes.indexOf(document.activeElement);
+    if (alvo.closest('.ds-dropdown-btn') && !aberto && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      ddAbrir(dd);
+      return;
+    }
+    if (!aberto) return;
+    if (e.key === 'Escape') { e.preventDefault(); ddFechar(dd, true); }
+    else if (e.key === 'Tab') ddFechar(dd, false);
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (opcoes.length) opcoes[Math.min(i + 1, opcoes.length - 1)].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (opcoes.length) opcoes[Math.max(i - 1, 0)].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); if (opcoes.length) opcoes[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); if (opcoes.length) opcoes[opcoes.length - 1].focus(); }
+    else if ((e.key === 'Enter' || e.key === ' ') && i !== -1) { e.preventDefault(); ddEscolher(dd, opcoes[i]); }
+  });
+
+  function hidratarDropdowns() {
+    var els = document.querySelectorAll('[data-ds-dropdown]');
+    for (var i = 0; i < els.length; i++) {
+      var dd = els[i];
+      dd.classList.add('ds-dropdown');
+      ddOpcoes(dd).forEach(function (o) {
+        if (!o.hasAttribute('aria-selected')) o.setAttribute('aria-selected', 'false');
+        if (!o.hasAttribute('tabindex')) o.setAttribute('tabindex', '-1');
+      });
+      ddAtualizar(dd);
+    }
+  }
+
+  // ---------- Barra de pesquisa ----------
+  // <form class="ds-pesquisa" role="search" data-ds-pesquisa> com `.ds-pesquisa-input`
+  // (type="search") e `.ds-pesquisa-limpar` (o "x", escondido com o campo vazio).
+  // Dispara `ds-pesquisa-alterar` (bubbles, `detail.valor`) 250 ms depois da
+  // última tecla e `ds-pesquisa-buscar` no Enter. Esc ou o "x" limpam o campo.
+  var pesquisaTimer = null;
+
+  function pesquisaSincronizar(caixa) {
+    var input = caixa.querySelector('.ds-pesquisa-input');
+    var limpar = caixa.querySelector('.ds-pesquisa-limpar');
+    if (limpar && input) limpar.hidden = input.value === '';
+  }
+
+  function pesquisaAvisar(caixa, tipo) {
+    var input = caixa.querySelector('.ds-pesquisa-input');
+    caixa.dispatchEvent(new CustomEvent(tipo, { bubbles: true, detail: { valor: input ? input.value : '' } }));
+  }
+
+  function pesquisaLimpar(caixa, silencioso) {
+    var input = caixa.querySelector('.ds-pesquisa-input');
+    if (!input) return;
+    input.value = '';
+    pesquisaSincronizar(caixa);
+    if (!silencioso) pesquisaAvisar(caixa, 'ds-pesquisa-alterar');
+  }
+
+  document.addEventListener('input', function (e) {
+    var caixa = e.target && e.target.closest ? e.target.closest('[data-ds-pesquisa]') : null;
+    if (!caixa || !e.target.classList.contains('ds-pesquisa-input')) return;
+    pesquisaSincronizar(caixa);
+    clearTimeout(pesquisaTimer);
+    pesquisaTimer = setTimeout(function () { pesquisaAvisar(caixa, 'ds-pesquisa-alterar'); }, 250);
+  });
+
+  document.addEventListener('click', function (e) {
+    var limpar = e.target && e.target.closest ? e.target.closest('.ds-pesquisa-limpar') : null;
+    var caixa = limpar && limpar.closest('[data-ds-pesquisa]');
+    if (!caixa) return;
+    pesquisaLimpar(caixa, false);
+    var input = caixa.querySelector('.ds-pesquisa-input');
+    if (input) input.focus();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var caixa = e.target && e.target.closest ? e.target.closest('[data-ds-pesquisa]') : null;
+    if (!caixa || !e.target.classList.contains('ds-pesquisa-input')) return;
+    if (e.key === 'Escape' && e.target.value !== '') { e.preventDefault(); pesquisaLimpar(caixa, false); }
+    else if (e.key === 'Enter') { e.preventDefault(); clearTimeout(pesquisaTimer); pesquisaAvisar(caixa, 'ds-pesquisa-buscar'); }
+  });
+
+  document.addEventListener('submit', function (e) {
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-ds-pesquisa')) e.preventDefault();
+  });
+
+  function hidratarPesquisas() {
+    var els = document.querySelectorAll('[data-ds-pesquisa]');
+    for (var i = 0; i < els.length; i++) {
+      els[i].classList.add('ds-pesquisa');
+      pesquisaSincronizar(els[i]);
+    }
+  }
+
+  // ---------- Barra de filtros ----------
+  // <div class="ds-filtros" data-ds-filtros> com uma pesquisa e dropdowns
+  // (`data-ds-nome` em cada um) e, opcionalmente, `.ds-filtros-limpar` e
+  // `.ds-filtros-resumo`. Junta tudo num só evento, `ds-filtros-alterar`
+  // (bubbles), com `detail = { pesquisa, filtros: { nome: [valores] }, ativos }`.
+  // O botão "Limpar filtros" só aparece com algum filtro ativo.
+  function filtrosEstado(barra) {
+    var caixa = barra.querySelector('.ds-pesquisa-input');
+    var estado = { pesquisa: caixa ? caixa.value.trim() : '', filtros: {}, ativos: 0 };
+    if (estado.pesquisa) estado.ativos++;
+    var dds = barra.querySelectorAll('.ds-dropdown');
+    for (var i = 0; i < dds.length; i++) {
+      var valores = ddValores(dds[i]);
+      var nome = dds[i].getAttribute('data-ds-nome') || 'filtro' + (i + 1);
+      estado.filtros[nome] = valores;
+      if (valores.length) estado.ativos++;
+    }
+    return estado;
+  }
+
+  function filtrosAtualizar(barra, avisar) {
+    var estado = filtrosEstado(barra);
+    var limpar = barra.querySelector('.ds-filtros-limpar');
+    var resumo = barra.querySelector('.ds-filtros-resumo');
+    if (limpar) limpar.hidden = estado.ativos === 0;
+    if (resumo) resumo.textContent = estado.ativos === 0 ? '' : estado.ativos + (estado.ativos === 1 ? ' filtro ativo' : ' filtros ativos');
+    if (avisar) barra.dispatchEvent(new CustomEvent('ds-filtros-alterar', { bubbles: true, detail: estado }));
+    return estado;
+  }
+
+  function filtrosLimpar(barra) {
+    var caixa = barra.querySelector('[data-ds-pesquisa]');
+    if (caixa) pesquisaLimpar(caixa, true);
+    var dds = barra.querySelectorAll('.ds-dropdown');
+    for (var i = 0; i < dds.length; i++) ddDefinir(dds[i], [], true);
+    filtrosAtualizar(barra, true);
+  }
+
+  ['ds-pesquisa-alterar', 'ds-dropdown-alterar'].forEach(function (nome) {
+    document.addEventListener(nome, function (e) {
+      var barra = e.target && e.target.closest ? e.target.closest('[data-ds-filtros]') : null;
+      if (barra) filtrosAtualizar(barra, true);
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    var limpar = e.target && e.target.closest ? e.target.closest('.ds-filtros-limpar') : null;
+    var barra = limpar && limpar.closest('[data-ds-filtros]');
+    if (barra) filtrosLimpar(barra);
+  });
+
+  function hidratarFiltros() {
+    var els = document.querySelectorAll('[data-ds-filtros]');
+    for (var i = 0; i < els.length; i++) {
+      els[i].classList.add('ds-filtros');
+      filtrosAtualizar(els[i], false);
+    }
+  }
+
+  // ---------- Máscaras ----------
+  // <input data-ds-mascara="telefone|email|cpf|cnpj|data-completa|data-abreviada|cartao">
+  // Formata enquanto digita (mantendo o cursor), valida ao sair do campo e
+  // marca `aria-invalid` com a mensagem em `.ds-campo-erro`. O valor do campo
+  // fica formatado; `KyvvoDS.mascara.limpar(tipo, valor)` devolve o valor
+  // cru (só dígitos; no CNPJ, letras e dígitos) para enviar ao servidor.
+  function soDigitos(v) { return String(v == null ? '' : v).replace(/\D/g, ''); }
+
+  function dvCpf(digs, n) {
+    var soma = 0;
+    for (var i = 0; i < n; i++) soma += Number(digs.charAt(i)) * (n + 1 - i);
+    var r = (soma * 10) % 11;
+    return r === 10 ? 0 : r;
+  }
+
+  function dvCnpj(base) {
+    var pesos = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    var soma = 0;
+    var off = pesos.length - base.length;
+    for (var i = 0; i < base.length; i++) soma += (base.charCodeAt(i) - 48) * pesos[i + off];
+    var r = soma % 11;
+    return r < 2 ? 0 : 11 - r;
+  }
+
+  function limparCnpj(v) {
+    var s = String(v == null ? '' : v).toUpperCase().replace(/[^0-9A-Z]/g, '');
+    var out = '';
+    for (var i = 0; i < s.length && out.length < 14; i++) {
+      // Os dois últimos caracteres (dígitos verificadores) são sempre números.
+      if (out.length >= 12 && !/[0-9]/.test(s.charAt(i))) continue;
+      out += s.charAt(i);
+    }
+    return out;
+  }
+
+  function luhn(digs) {
+    var soma = 0;
+    var dobrar = false;
+    for (var i = digs.length - 1; i >= 0; i--) {
+      var n = Number(digs.charAt(i));
+      if (dobrar) { n *= 2; if (n > 9) n -= 9; }
+      soma += n;
+      dobrar = !dobrar;
+    }
+    return soma % 10 === 0;
+  }
+
+  function marcaCartao(v) {
+    var d = soDigitos(v);
+    if (/^3[47]/.test(d)) return 'amex';
+    if (/^4/.test(d)) return 'visa';
+    if (/^(5[1-5]|2(2[2-9][1-9]|2[3-9]|[3-6]|7[01]|720))/.test(d)) return 'mastercard';
+    return '';
+  }
+
+  function diaValido(dia, mes, ano) {
+    if (mes < 1 || mes > 12 || dia < 1) return false;
+    var dias = [31, (ano % 4 === 0 && (ano % 100 !== 0 || ano % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return dia <= dias[mes - 1];
+  }
+
+  function anoDeDoisDigitos(aa) {
+    var atual = new Date().getFullYear();
+    var ano = 2000 + aa;
+    return ano > atual + 10 ? ano - 100 : ano;
+  }
+
+  function formatarData(v, tamanhoAno) {
+    var d = soDigitos(v).slice(0, 4 + tamanhoAno);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return d.slice(0, 2) + '/' + d.slice(2);
+    return d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
+  }
+
+  var MASCARAS = {
+    telefone: {
+      mensagem: 'Telefone inválido',
+      exemplo: '(11) 91234-5678',
+      autocomplete: 'tel-national',
+      inputmode: 'tel',
+      formatar: function (v) {
+        var d = soDigitos(v);
+        if (!d) return '';
+        var celular = d.length >= 11 || d.charAt(2) === '9';
+        d = d.slice(0, celular ? 11 : 10);
+        if (d.length <= 2) return '(' + d;
+        var corte = celular ? 5 : 4;
+        var corpo = d.slice(2);
+        return '(' + d.slice(0, 2) + ') ' + (corpo.length <= corte ? corpo : corpo.slice(0, corte) + '-' + corpo.slice(corte));
+      },
+      limpar: soDigitos,
+      validar: function (v) {
+        var d = soDigitos(v);
+        if (d.length !== 10 && d.length !== 11) return false;
+        if (d.charAt(0) === '0' || d.charAt(1) === '0') return false;
+        return d.length === 11 ? d.charAt(2) === '9' : /[2-9]/.test(d.charAt(2));
+      }
+    },
+    email: {
+      mensagem: 'E-mail inválido',
+      exemplo: 'nome@exemplo.com',
+      autocomplete: 'email',
+      inputmode: 'email',
+      formatar: function (v) { return String(v == null ? '' : v).replace(/\s+/g, '').toLowerCase(); },
+      limpar: function (v) { return String(v == null ? '' : v).replace(/\s+/g, '').toLowerCase(); },
+      validar: function (v) {
+        var s = String(v == null ? '' : v).trim();
+        return s.length <= 254 && /^[^\s@.][^\s@]*@[^\s@.]+(\.[^\s@.]+)*\.[^\s@.]{2,}$/.test(s) && s.indexOf('..') === -1 && /^[^@]{1,64}@/.test(s);
+      }
+    },
+    cpf: {
+      mensagem: 'CPF inválido',
+      exemplo: '000.000.000-00',
+      autocomplete: 'off',
+      inputmode: 'numeric',
+      formatar: function (v) {
+        var d = soDigitos(v).slice(0, 11);
+        var s = d.slice(0, 3);
+        if (d.length > 3) s += '.' + d.slice(3, 6);
+        if (d.length > 6) s += '.' + d.slice(6, 9);
+        if (d.length > 9) s += '-' + d.slice(9);
+        return s;
+      },
+      limpar: soDigitos,
+      validar: function (v) {
+        var d = soDigitos(v);
+        if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+        return dvCpf(d, 9) === Number(d.charAt(9)) && dvCpf(d, 10) === Number(d.charAt(10));
+      }
+    },
+    cnpj: {
+      mensagem: 'CNPJ inválido',
+      exemplo: '00.000.000/0000-00',
+      autocomplete: 'off',
+      inputmode: 'text',
+      formatar: function (v) {
+        var c = limparCnpj(v);
+        var s = c.slice(0, 2);
+        if (c.length > 2) s += '.' + c.slice(2, 5);
+        if (c.length > 5) s += '.' + c.slice(5, 8);
+        if (c.length > 8) s += '/' + c.slice(8, 12);
+        if (c.length > 12) s += '-' + c.slice(12);
+        return s;
+      },
+      limpar: limparCnpj,
+      validar: function (v) {
+        var c = limparCnpj(v);
+        if (c.length !== 14 || /^(.)\1{13}$/.test(c)) return false;
+        var d1 = dvCnpj(c.slice(0, 12));
+        return d1 === Number(c.charAt(12)) && dvCnpj(c.slice(0, 12) + d1) === Number(c.charAt(13));
+      }
+    },
+    'data-completa': {
+      mensagem: 'Data inválida',
+      exemplo: 'DD/MM/AAAA',
+      autocomplete: 'off',
+      inputmode: 'numeric',
+      formatar: function (v) { return formatarData(v, 4); },
+      limpar: soDigitos,
+      validar: function (v) {
+        var d = soDigitos(v);
+        if (d.length !== 8) return false;
+        var ano = Number(d.slice(4));
+        return ano >= 1900 && ano <= 2100 && diaValido(Number(d.slice(0, 2)), Number(d.slice(2, 4)), ano);
+      }
+    },
+    'data-abreviada': {
+      mensagem: 'Data inválida',
+      exemplo: 'DD/MM/AA',
+      autocomplete: 'off',
+      inputmode: 'numeric',
+      formatar: function (v) { return formatarData(v, 2); },
+      limpar: soDigitos,
+      validar: function (v) {
+        var d = soDigitos(v);
+        if (d.length !== 6) return false;
+        return diaValido(Number(d.slice(0, 2)), Number(d.slice(2, 4)), anoDeDoisDigitos(Number(d.slice(4))));
+      }
+    },
+    cartao: {
+      mensagem: 'Número de cartão inválido',
+      exemplo: '0000 0000 0000 0000',
+      autocomplete: 'cc-number',
+      inputmode: 'numeric',
+      formatar: function (v) {
+        var d = soDigitos(v).slice(0, 19);
+        if (marcaCartao(d) === 'amex') {
+          d = d.slice(0, 15);
+          var a = d.slice(0, 4);
+          if (d.length > 4) a += ' ' + d.slice(4, 10);
+          if (d.length > 10) a += ' ' + d.slice(10);
+          return a;
+        }
+        return d.replace(/(\d{4})(?=\d)/g, '$1 ');
+      },
+      limpar: soDigitos,
+      validar: function (v) {
+        var d = soDigitos(v);
+        var tam = marcaCartao(d) === 'amex' ? [15] : [13, 14, 15, 16, 17, 18, 19];
+        return tam.indexOf(d.length) !== -1 && luhn(d);
+      }
+    }
+  };
+
+  function significativo(tipo, ch) {
+    return tipo === 'cnpj' ? /[0-9A-Za-z]/.test(ch) : /\d/.test(ch);
+  }
+
+  function prepararMascara(el) {
+    if (el.getAttribute('data-ds-preparado')) return;
+    var tipo = el.getAttribute('data-ds-mascara');
+    var m = MASCARAS[tipo];
+    if (!m) return;
+    el.setAttribute('data-ds-preparado', '1');
+    if (!el.hasAttribute('inputmode')) el.setAttribute('inputmode', m.inputmode);
+    if (!el.hasAttribute('autocomplete')) el.setAttribute('autocomplete', m.autocomplete);
+    if (!el.hasAttribute('placeholder')) el.setAttribute('placeholder', m.exemplo);
+    if (tipo === 'cnpj' || tipo === 'email') el.setAttribute('autocapitalize', tipo === 'cnpj' ? 'characters' : 'none');
+    el.setAttribute('spellcheck', 'false');
+  }
+
+  function erroDoCampo(el, criar) {
+    var campo = el.closest('.ds-campo') || el.parentNode;
+    var erro = campo && campo.querySelector('.ds-campo-erro');
+    if (!erro && criar && campo) {
+      erro = document.createElement('p');
+      erro.className = 'ds-campo-erro';
+      erro.hidden = true;
+      campo.appendChild(erro);
+    }
+    if (erro && !erro.id) erro.id = 'ds-erro-' + Math.random().toString(36).slice(2, 8);
+    return erro;
+  }
+
+  // Valida o campo, marca aria-invalid e mostra ou esconde a mensagem.
+  // Vazio e sem `required` conta como válido. Devolve true/false.
+  function validarCampo(el) {
+    var tipo = el.getAttribute('data-ds-mascara');
+    var m = MASCARAS[tipo];
+    if (!m) return true;
+    var vazio = el.value === '';
+    var valido = vazio ? !el.required : m.validar(el.value);
+    var msg = vazio ? 'Campo obrigatório' : (el.getAttribute('data-ds-mensagem-erro') || m.mensagem);
+    var erro = erroDoCampo(el, !valido);
+    if (valido) el.removeAttribute('aria-invalid'); else el.setAttribute('aria-invalid', 'true');
+    if (erro) {
+      erro.hidden = valido;
+      if (!valido) erro.textContent = msg;
+      var ids = (el.getAttribute('aria-describedby') || '').split(' ').filter(Boolean);
+      if (!valido && ids.indexOf(erro.id) === -1) ids.push(erro.id);
+      if (valido) ids = ids.filter(function (x) { return x !== erro.id; });
+      if (ids.length) el.setAttribute('aria-describedby', ids.join(' ')); else el.removeAttribute('aria-describedby');
+    }
+    el.dispatchEvent(new CustomEvent('ds-mascara-validar', { bubbles: true, detail: { tipo: tipo, valido: valido, valor: el.value, bruto: m.limpar(el.value) } }));
+    return valido;
+  }
+
+  function aplicarMascara(el) {
+    var tipo = el.getAttribute('data-ds-mascara');
+    var m = MASCARAS[tipo];
+    if (!m) return;
+    var ant = el.value;
+    var novo = m.formatar(ant);
+    if (novo === ant) return;
+    var comCursor = tipo !== 'email' && document.activeElement === el && typeof el.selectionStart === 'number';
+    var antes = 0;
+    if (comCursor) {
+      var pos = el.selectionStart;
+      for (var i = 0; i < pos; i++) if (significativo(tipo, ant.charAt(i))) antes++;
+    }
+    el.value = novo;
+    if (comCursor) {
+      var cont = 0;
+      var p = 0;
+      while (p < novo.length && cont < antes) { if (significativo(tipo, novo.charAt(p))) cont++; p++; }
+      try { el.setSelectionRange(p, p); } catch (err) { /* tipos sem seleção */ }
+    }
+  }
+
+  document.addEventListener('focusin', function (e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute('data-ds-mascara')) prepararMascara(e.target);
+  });
+
+  document.addEventListener('input', function (e) {
+    var el = e.target;
+    if (!el || !el.getAttribute || !el.getAttribute('data-ds-mascara')) return;
+    prepararMascara(el);
+    aplicarMascara(el);
+    // Depois de um erro, revalida a cada tecla para o aviso sumir assim que o valor estiver certo.
+    if (el.getAttribute('aria-invalid') === 'true') validarCampo(el);
+  });
+
+  document.addEventListener('focusout', function (e) {
+    var el = e.target;
+    if (!el || !el.getAttribute || !el.getAttribute('data-ds-mascara')) return;
+    validarCampo(el);
+  });
+
+  // Valida todos os campos com máscara de um formulário; foca o primeiro inválido.
+  function validarFormulario(form) {
+    var campos = form.querySelectorAll('[data-ds-mascara]');
+    var primeiro = null;
+    for (var i = 0; i < campos.length; i++) {
+      if (!validarCampo(campos[i]) && !primeiro) primeiro = campos[i];
+    }
+    if (primeiro) primeiro.focus();
+    return !primeiro;
+  }
+
+  function hidratarMascaras() {
+    var els = document.querySelectorAll('[data-ds-mascara]');
+    for (var i = 0; i < els.length; i++) {
+      prepararMascara(els[i]);
+      if (els[i].value) els[i].value = MASCARAS[els[i].getAttribute('data-ds-mascara')].formatar(els[i].value);
+    }
+  }
+
+  var mascara = {
+    tipos: Object.keys(MASCARAS),
+    formatar: function (tipo, valor) { return MASCARAS[tipo] ? MASCARAS[tipo].formatar(valor) : String(valor); },
+    limpar: function (tipo, valor) { return MASCARAS[tipo] ? MASCARAS[tipo].limpar(valor) : String(valor); },
+    validar: function (tipo, valor) { return MASCARAS[tipo] ? MASCARAS[tipo].validar(valor) : true; },
+    marca: marcaCartao,
+    campo: validarCampo,
+    formulario: validarFormulario
+  };
+
+  // ---- Abas ----
+  // <div class="ds-abas" data-ds-abas> com uma .ds-abas-lista (filha direta,
+  // role="tablist") de botões .ds-aba (role="tab", aria-controls = id do
+  // painel) e um .ds-abas-painel (role="tabpanel") por aba. A marcação já
+  // nasce no estado inicial (aria-selected na aba ativa, hidden nos outros
+  // painéis); o script mantém isso e liga clique e teclado.
+
+  function abasFilhos(pai, classe) {
+    var lista = [];
+    if (!pai) return lista;
+    for (var i = 0; i < pai.children.length; i++) {
+      if (pai.children[i].classList.contains(classe)) lista.push(pai.children[i]);
+    }
+    return lista;
+  }
+
+  function abasLista(el) { return abasFilhos(el, 'ds-abas-lista')[0] || null; }
+  function abasTabs(el) { return abasFilhos(abasLista(el), 'ds-aba'); }
+
+  function abaPainel(aba) {
+    var id = aba.getAttribute('aria-controls');
+    return id ? document.getElementById(id) : null;
+  }
+
+  function abasHabilitadas(el) {
+    return abasTabs(el).filter(function (t) { return !t.disabled && t.getAttribute('aria-disabled') !== 'true'; });
+  }
+
+  function abasAtivar(el, aba, foco, silencioso) {
+    var tabs = abasTabs(el);
+    var anterior = null;
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('aria-selected') === 'true') anterior = tabs[i];
+    }
+    var indice = -1;
+    for (var j = 0; j < tabs.length; j++) {
+      var sel = tabs[j] === aba;
+      if (sel) indice = j;
+      tabs[j].setAttribute('aria-selected', sel ? 'true' : 'false');
+      tabs[j].tabIndex = sel ? 0 : -1;
+      var painel = abaPainel(tabs[j]);
+      if (painel) painel.hidden = !sel;
+    }
+    var lista = aba.parentNode;
+    var esq = aba.offsetLeft;
+    var dir = esq + aba.offsetWidth;
+    if (esq < lista.scrollLeft) lista.scrollLeft = Math.max(0, esq - 8);
+    else if (dir > lista.scrollLeft + lista.clientWidth) lista.scrollLeft = dir - lista.clientWidth + 8;
+    if (foco) aba.focus();
+    if (anterior !== aba && !silencioso) {
+      var p = abaPainel(aba);
+      el.dispatchEvent(new CustomEvent('ds-abas-alterar', {
+        bubbles: true,
+        detail: { aba: aba, painel: p, id: aba.getAttribute('aria-controls'), indice: indice }
+      }));
+    }
+  }
+
+  function prepararAbas(el) {
+    if (el.getAttribute('data-ds-preparado') === 'abas') return;
+    el.setAttribute('data-ds-preparado', 'abas');
+    el.classList.add('ds-abas');
+    var lista = abasLista(el);
+    if (lista && !lista.getAttribute('role')) lista.setAttribute('role', 'tablist');
+    var tabs = abasTabs(el);
+    var inicial = null;
+    for (var i = 0; i < tabs.length; i++) {
+      if (!tabs[i].getAttribute('role')) tabs[i].setAttribute('role', 'tab');
+      if (!tabs[i].getAttribute('type')) tabs[i].setAttribute('type', 'button');
+      var p = abaPainel(tabs[i]);
+      if (p && !p.getAttribute('role')) p.setAttribute('role', 'tabpanel');
+      if (p && !p.getAttribute('aria-labelledby') && tabs[i].id) p.setAttribute('aria-labelledby', tabs[i].id);
+      if (p && !p.hasAttribute('tabindex')) p.tabIndex = 0;
+      if (!inicial && tabs[i].getAttribute('aria-selected') === 'true' && !tabs[i].disabled) inicial = tabs[i];
+    }
+    if (!inicial) inicial = abasHabilitadas(el)[0] || null;
+    if (inicial) abasAtivar(el, inicial, false, true);
+  }
+
+  function abasSelecionar(el, alvo, silencioso) {
+    prepararAbas(el);
+    var tabs = abasTabs(el);
+    var aba = null;
+    if (typeof alvo === 'number') aba = tabs[alvo] || null;
+    else {
+      for (var i = 0; i < tabs.length; i++) {
+        if (tabs[i].id === alvo || tabs[i].getAttribute('aria-controls') === alvo) aba = tabs[i];
+      }
+    }
+    if (!aba || aba.disabled || aba.getAttribute('aria-disabled') === 'true') return false;
+    abasAtivar(el, aba, false, !!silencioso);
+    return true;
+  }
+
+  function abasAtiva(el) {
+    prepararAbas(el);
+    var tabs = abasTabs(el);
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('aria-selected') === 'true') return tabs[i];
+    }
+    return null;
+  }
+
+  function abasDoAlvo(alvo) {
+    var aba = alvo && alvo.closest ? alvo.closest('.ds-aba') : null;
+    var el = aba ? aba.closest('.ds-abas') : null;
+    if (!aba || !el || !el.hasAttribute('data-ds-abas') || aba.parentNode !== abasLista(el)) return null;
+    prepararAbas(el);
+    return { el: el, aba: aba };
+  }
+
+  document.addEventListener('click', function (e) {
+    var r = abasDoAlvo(e.target);
+    if (!r || r.aba.disabled || r.aba.getAttribute('aria-disabled') === 'true') return;
+    abasAtivar(r.el, r.aba, false, false);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var r = abasDoAlvo(e.target);
+    if (!r) return;
+    var tecla = e.key;
+    if (tecla !== 'ArrowLeft' && tecla !== 'ArrowRight' && tecla !== 'Home' && tecla !== 'End') return;
+    var lista = abasHabilitadas(r.el);
+    if (!lista.length) return;
+    var pos = lista.indexOf(r.aba);
+    var novo;
+    if (tecla === 'Home') novo = 0;
+    else if (tecla === 'End') novo = lista.length - 1;
+    else if (tecla === 'ArrowRight') novo = (pos + 1) % lista.length;
+    else novo = (pos - 1 + lista.length) % lista.length;
+    e.preventDefault();
+    if (r.el.getAttribute('data-ds-abas') === 'manual') lista[novo].focus();
+    else abasAtivar(r.el, lista[novo], true, false);
+  });
+
+  function hidratarAbas() {
+    var els = document.querySelectorAll('[data-ds-abas]');
+    for (var i = 0; i < els.length; i++) prepararAbas(els[i]);
+  }
+
+  // ---- Carrossel ----
+  // <div class="ds-carrossel" data-ds-carrossel aria-label="..."> com um
+  // .ds-carrossel-trilho (filho direto; rola na horizontal com snap) de
+  // .ds-carrossel-slide e, opcionalmente, .ds-carrossel-controles com os
+  // botões .ds-carrossel-ant / .ds-carrossel-prox e .ds-carrossel-pontos
+  // (vazio: o script cria um ponto por slide). Um slide por vez, sem
+  // rotação automática.
+
+  function carrosselFilho(el, classe) {
+    for (var i = 0; i < el.children.length; i++) {
+      if (el.children[i].classList.contains(classe)) return el.children[i];
+    }
+    return null;
+  }
+
+  function carrosselSlides(el) {
+    var trilho = carrosselFilho(el, 'ds-carrossel-trilho');
+    var lista = [];
+    if (!trilho) return lista;
+    for (var i = 0; i < trilho.children.length; i++) {
+      if (trilho.children[i].classList.contains('ds-carrossel-slide')) lista.push(trilho.children[i]);
+    }
+    return lista;
+  }
+
+  function carrosselIndice(el) {
+    var i = parseInt(el.getAttribute('data-ds-indice'), 10);
+    return isNaN(i) ? 0 : i;
+  }
+
+  function carrosselAtualizar(el, indice, disparar) {
+    var slides = carrosselSlides(el);
+    if (!slides.length) return;
+    if (indice < 0) indice = 0;
+    if (indice > slides.length - 1) indice = slides.length - 1;
+    var mudou = el.getAttribute('data-ds-indice') !== String(indice);
+    el.setAttribute('data-ds-indice', String(indice));
+    for (var i = 0; i < slides.length; i++) {
+      var ativo = i === indice;
+      if (ativo) { slides[i].removeAttribute('aria-hidden'); slides[i].removeAttribute('inert'); }
+      else { slides[i].setAttribute('aria-hidden', 'true'); slides[i].setAttribute('inert', ''); }
+    }
+    var ctl = carrosselFilho(el, 'ds-carrossel-controles');
+    if (ctl) {
+      var pontos = ctl.querySelectorAll('.ds-carrossel-ponto');
+      for (var j = 0; j < pontos.length; j++) {
+        if (j === indice) pontos[j].setAttribute('aria-current', 'true');
+        else pontos[j].removeAttribute('aria-current');
+      }
+      var ant = ctl.querySelector('.ds-carrossel-ant');
+      var prox = ctl.querySelector('.ds-carrossel-prox');
+      if (ant) ant.disabled = indice === 0;
+      if (prox) prox.disabled = indice === slides.length - 1;
+    }
+    if (mudou && disparar) {
+      el.dispatchEvent(new CustomEvent('ds-carrossel-alterar', {
+        bubbles: true,
+        detail: { indice: indice, slide: slides[indice] }
+      }));
+    }
+  }
+
+  function prepararCarrossel(el) {
+    if (el.getAttribute('data-ds-preparado') === 'carrossel') return;
+    el.setAttribute('data-ds-preparado', 'carrossel');
+    el.classList.add('ds-carrossel');
+    if (!el.getAttribute('role')) el.setAttribute('role', 'region');
+    if (!el.getAttribute('aria-roledescription')) el.setAttribute('aria-roledescription', 'carrossel');
+    var trilho = carrosselFilho(el, 'ds-carrossel-trilho');
+    var slides = carrosselSlides(el);
+    for (var i = 0; i < slides.length; i++) {
+      if (!slides[i].getAttribute('role')) slides[i].setAttribute('role', 'group');
+      if (!slides[i].getAttribute('aria-roledescription')) slides[i].setAttribute('aria-roledescription', 'slide');
+      if (!slides[i].getAttribute('aria-label')) slides[i].setAttribute('aria-label', (i + 1) + ' de ' + slides.length);
+    }
+    var ctl = carrosselFilho(el, 'ds-carrossel-controles');
+    if (ctl) {
+      var ant = ctl.querySelector('.ds-carrossel-ant');
+      var prox = ctl.querySelector('.ds-carrossel-prox');
+      if (ant) { ant.type = 'button'; if (!ant.getAttribute('aria-label')) ant.setAttribute('aria-label', 'Slide anterior'); }
+      if (prox) { prox.type = 'button'; if (!prox.getAttribute('aria-label')) prox.setAttribute('aria-label', 'Próximo slide'); }
+      var pontos = ctl.querySelector('.ds-carrossel-pontos');
+      if (pontos && !pontos.children.length) {
+        for (var k = 0; k < slides.length; k++) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'ds-carrossel-ponto';
+          b.setAttribute('aria-label', 'Ir para o slide ' + (k + 1) + ' de ' + slides.length);
+          pontos.appendChild(b);
+        }
+      }
+      ctl.hidden = slides.length < 2;
+    }
+    if (trilho) {
+      var espera = null;
+      trilho.addEventListener('scroll', function () {
+        if (espera) return;
+        espera = window.requestAnimationFrame(function () {
+          espera = null;
+          var largura = slides[0] ? slides[0].offsetWidth : 0;
+          if (largura) carrosselAtualizar(el, Math.round(trilho.scrollLeft / largura), true);
+        });
+      }, { passive: true });
+    }
+    carrosselAtualizar(el, 0, false);
+  }
+
+  function carrosselIr(el, indice, silencioso) {
+    prepararCarrossel(el);
+    var trilho = carrosselFilho(el, 'ds-carrossel-trilho');
+    var slides = carrosselSlides(el);
+    if (!trilho || indice < 0 || indice > slides.length - 1) return false;
+    var reduzir = false;
+    try { reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (err) { /* sem matchMedia */ }
+    carrosselAtualizar(el, indice, !silencioso);
+    trilho.scrollTo({ left: indice * slides[0].offsetWidth, behavior: reduzir ? 'auto' : 'smooth' });
+    return true;
+  }
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target.closest('.ds-carrossel-ant, .ds-carrossel-prox, .ds-carrossel-ponto') : null;
+    var el = alvo ? alvo.closest('.ds-carrossel') : null;
+    if (!alvo || !el || !el.hasAttribute('data-ds-carrossel') || alvo.disabled) return;
+    prepararCarrossel(el);
+    var atual = carrosselIndice(el);
+    if (alvo.classList.contains('ds-carrossel-ant')) carrosselIr(el, atual - 1, false);
+    else if (alvo.classList.contains('ds-carrossel-prox')) carrosselIr(el, atual + 1, false);
+    else {
+      var pontos = alvo.parentNode.querySelectorAll('.ds-carrossel-ponto');
+      for (var i = 0; i < pontos.length; i++) if (pontos[i] === alvo) carrosselIr(el, i, false);
+    }
+  });
+
+  function hidratarCarrosseis() {
+    var els = document.querySelectorAll('[data-ds-carrossel]');
+    for (var i = 0; i < els.length; i++) prepararCarrossel(els[i]);
+  }
+
+  // ---------- Modal ----------
+  // KyvvoDS.modalAbrir(conteudoHtml, opts) — opts: {titulo, classeExtra,
+  // aoFechar}. Cria `.ds-modal-overlay` > `.ds-modal-card` (com `.ds-modal-close`
+  // e, se `opts.titulo`, um `.ds-modal-titulo`) e anexa no fim do `<body>`.
+  // Fecha em clique no X, clique fora do card (backdrop) ou Esc — chama
+  // `opts.aoFechar` (se vier) e dispara `ds-modal-fechar` (bubbles) no
+  // document. Só existe um modal por vez: abrir um novo fecha o anterior sem
+  // chamar o `aoFechar` dele (mesma regra do `abrirModal` que o Studio já
+  // tem localmente). Retorna o elemento overlay, caso o chamador precise de
+  // uma referência (ex.: pra fazer querySelector do conteúdo).
+  var modalAtual = null;
+
+  function modalFechar() {
+    if (!modalAtual) return;
+    var overlay = modalAtual.overlay;
+    var aoFechar = modalAtual.aoFechar;
+    modalAtual = null;
+    overlay.remove();
+    document.removeEventListener('keydown', modalEsc);
+    if (typeof aoFechar === 'function') aoFechar();
+    document.dispatchEvent(new CustomEvent('ds-modal-fechar', { bubbles: true }));
+  }
+
+  function modalEsc(e) {
+    if (e.key === 'Escape') modalFechar();
+  }
+
+  function modalAbrir(conteudoHtml, opts) {
+    if (modalAtual) { var o = modalAtual.overlay; modalAtual = null; o.remove(); document.removeEventListener('keydown', modalEsc); }
+    opts = opts || {};
+    var overlay = document.createElement('div');
+    overlay.className = 'ds-modal-overlay';
+    overlay.innerHTML =
+      '<div class="ds-modal-card' + (opts.classeExtra ? ' ' + opts.classeExtra : '') + '" role="dialog" aria-modal="true">' +
+        '<button type="button" class="ds-modal-close" aria-label="Fechar">✕</button>' +
+        (opts.titulo ? '<h3 class="ds-modal-titulo">' + opts.titulo + '</h3>' : '') +
+        '<div class="ds-modal-corpo">' + conteudoHtml + '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('.ds-modal-close').addEventListener('click', modalFechar);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) modalFechar(); });
+    document.addEventListener('keydown', modalEsc);
+    modalAtual = { overlay: overlay, aoFechar: opts.aoFechar };
+    document.dispatchEvent(new CustomEvent('ds-modal-abrir', { bubbles: true, detail: { overlay: overlay } }));
+    return overlay;
+  }
+
+  // ---------- Barra de seleção flutuante ----------
+  // KyvvoDS.selecaoBarraAtualizar(el, quantidade) — el é o `.ds-selecao-barra`
+  // já presente na marcação do produto (com um `.ds-selecao-barra-contagem`
+  // dentro). Só mostra/esconde e escreve o número; os botões de ação/limpar
+  // são ligados pelo produto, o componente não sabe o que eles fazem.
+  function selecaoBarraAtualizar(el, quantidade) {
+    if (!el) return;
+    el.hidden = !quantidade;
+    var contagem = el.querySelector('.ds-selecao-barra-contagem');
+    if (contagem) contagem.textContent = String(quantidade);
+    el.dispatchEvent(new CustomEvent('ds-selecao-alterar', { bubbles: true, detail: { quantidade: quantidade } }));
+  }
+
+  // ---------- Paginação ----------
+  // <nav class="ds-paginacao" data-ds-paginacao data-ds-total="36"
+  //      data-ds-tamanho="10" data-ds-pagina="1" data-ds-tamanhos="10,25,50">
+  // O componente só desenha e avisa: dispara `ds-paginacao-alterar`
+  // (detail = { pagina, tamanho }) e o produto busca/fatia os dados e
+  // chama KyvvoDS.paginacaoAtualizar(el, { total, pagina, tamanho }).
+  function paginacaoPaginas(atual, ultima) {
+    var set = {};
+    [1, ultima, atual - 1, atual, atual + 1].forEach(function (n) { if (n >= 1 && n <= ultima) set[n] = true; });
+    var nums = Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+    var saida = [];
+    nums.forEach(function (n, i) {
+      if (i && n - nums[i - 1] === 2) saida.push(n - 1);
+      else if (i && n - nums[i - 1] > 2) saida.push(0);
+      saida.push(n);
+    });
+    return saida;
+  }
+
+  function paginacaoAtualizar(el, estado) {
+    if (!el) return;
+    var d = el.dataset;
+    estado = estado || {};
+    var total = Math.max(0, parseInt(estado.total != null ? estado.total : d.dsTotal, 10) || 0);
+    var tamanho = Math.max(1, parseInt(estado.tamanho != null ? estado.tamanho : d.dsTamanho, 10) || 10);
+    var ultima = Math.max(1, Math.ceil(total / tamanho));
+    var pagina = Math.min(ultima, Math.max(1, parseInt(estado.pagina != null ? estado.pagina : d.dsPagina, 10) || 1));
+    d.dsTotal = String(total);
+    d.dsTamanho = String(tamanho);
+    d.dsPagina = String(pagina);
+
+    var de = total ? (pagina - 1) * tamanho + 1 : 0;
+    var ate = Math.min(total, pagina * tamanho);
+    var html = '<span class="ds-paginacao-resumo" aria-live="polite">' + de + '–' + ate + ' de ' + total + '</span>';
+
+    var tamanhos = (d.dsTamanhos || '').split(',').map(function (n) { return parseInt(n, 10); }).filter(Boolean);
+    if (tamanhos.length) {
+      html += '<label class="ds-paginacao-tamanho">Por página <select>' +
+        tamanhos.map(function (n) { return '<option value="' + n + '"' + (n === tamanho ? ' selected' : '') + '>' + n + '</option>'; }).join('') +
+        '</select></label>';
+    }
+
+    if (ultima > 1) {
+      html += '<div class="ds-paginacao-nav" role="group" aria-label="Páginas">' +
+        '<button type="button" class="ds-paginacao-btn ds-paginacao-ant" data-pagina="' + (pagina - 1) + '" aria-label="Página anterior"' + (pagina === 1 ? ' disabled' : '') + '>‹</button>';
+      paginacaoPaginas(pagina, ultima).forEach(function (n) {
+        html += n === 0
+          ? '<span class="ds-paginacao-reticencias" aria-hidden="true">…</span>'
+          : '<button type="button" class="ds-paginacao-btn" data-pagina="' + n + '" aria-label="Página ' + n + '"' + (n === pagina ? ' aria-current="page"' : '') + '>' + n + '</button>';
+      });
+      html += '<button type="button" class="ds-paginacao-btn ds-paginacao-prox" data-pagina="' + (pagina + 1) + '" aria-label="Próxima página"' + (pagina === ultima ? ' disabled' : '') + '>›</button></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function paginacaoAvisar(el) {
+    el.dispatchEvent(new CustomEvent('ds-paginacao-alterar', {
+      bubbles: true,
+      detail: { pagina: parseInt(el.dataset.dsPagina, 10), tamanho: parseInt(el.dataset.dsTamanho, 10) },
+    }));
+  }
+
+  function hidratarPaginacoes() {
+    document.querySelectorAll('[data-ds-paginacao]').forEach(function (el) {
+      if (el.dataset.dsPaginacaoPronta) return;
+      el.dataset.dsPaginacaoPronta = '1';
+      el.classList.add('ds-paginacao');
+      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Paginação');
+      el.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('.ds-paginacao-btn[data-pagina]');
+        if (!btn || btn.disabled) return;
+        paginacaoAtualizar(el, { pagina: parseInt(btn.dataset.pagina, 10) });
+        paginacaoAvisar(el);
+        var foco = el.querySelector('.ds-paginacao-btn[data-pagina="' + btn.dataset.pagina + '"]');
+        if (foco) foco.focus();
+      });
+      el.addEventListener('change', function (e) {
+        if (!e.target.closest || !e.target.closest('.ds-paginacao-tamanho')) return;
+        paginacaoAtualizar(el, { tamanho: parseInt(e.target.value, 10), pagina: 1 });
+        paginacaoAvisar(el);
+        var sel = el.querySelector('.ds-paginacao-tamanho select');
+        if (sel) sel.focus();
+      });
+      paginacaoAtualizar(el);
+    });
+  }
+
+  // ---------- Medidor de uso ----------
+  // <div class="ds-medidor" data-ds-medidor data-ds-usado="0" data-ds-limite="200">
+  // Escreve em `.ds-medidor-usado`/`.ds-medidor-limite`, calcula a largura
+  // da barra e troca o tom (>= 80% aviso, >= 100% perigo).
+  function medidorAtualizar(el, usado, limite) {
+    if (!el) return;
+    usado = Math.max(0, Number(usado) || 0);
+    limite = Math.max(0, Number(limite) || 0);
+    var pct = limite ? Math.min(100, Math.round(usado / limite * 100)) : 0;
+    el.dataset.dsUsado = String(usado);
+    el.dataset.dsLimite = String(limite);
+    el.style.setProperty('--ds-medidor-pct', pct + '%');
+    el.classList.toggle('ds-medidor-aviso', limite > 0 && usado / limite >= 0.8 && usado < limite);
+    el.classList.toggle('ds-medidor-perigo', limite > 0 && usado >= limite);
+    var u = el.querySelector('.ds-medidor-usado');
+    var l = el.querySelector('.ds-medidor-limite-valor');
+    if (u) u.textContent = String(usado);
+    if (l) l.textContent = String(limite);
+    var trilho = el.querySelector('.ds-medidor-trilho');
+    if (trilho) {
+      trilho.setAttribute('role', 'progressbar');
+      trilho.setAttribute('aria-valuemin', '0');
+      trilho.setAttribute('aria-valuemax', String(limite));
+      trilho.setAttribute('aria-valuenow', String(Math.min(usado, limite)));
+    }
+    el.dispatchEvent(new CustomEvent('ds-medidor-alterar', { bubbles: true, detail: { usado: usado, limite: limite, porcentagem: pct } }));
+  }
+
+  function hidratarMedidores() {
+    document.querySelectorAll('[data-ds-medidor]').forEach(function (el) {
+      medidorAtualizar(el, el.dataset.dsUsado, el.dataset.dsLimite);
+    });
+  }
+
+  // ---------- Datas ----------
+  // dataRelativa: "Hoje, 14:03" / "Ontem, 00:03" / "04/10/2026 14:03".
+  // dataCompleta: sempre "dd/mm/aaaa hh:mm" (use no `title`/tooltip).
+  function doisDigitos(n) { return (n < 10 ? '0' : '') + n; }
+  function dataCompleta(valor) {
+    var d = valor instanceof Date ? valor : new Date(valor);
+    if (isNaN(d.getTime())) return '';
+    return doisDigitos(d.getDate()) + '/' + doisDigitos(d.getMonth() + 1) + '/' + d.getFullYear() +
+      ' ' + doisDigitos(d.getHours()) + ':' + doisDigitos(d.getMinutes());
+  }
+  function dataRelativa(valor, agora) {
+    var d = valor instanceof Date ? valor : new Date(valor);
+    if (isNaN(d.getTime())) return '';
+    var ref = agora ? new Date(agora) : new Date();
+    var dia = function (x) { return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+    var dif = Math.round((dia(ref) - dia(d)) / 86400000);
+    var hora = doisDigitos(d.getHours()) + ':' + doisDigitos(d.getMinutes());
+    if (dif === 0) return 'Hoje, ' + hora;
+    if (dif === 1) return 'Ontem, ' + hora;
+    return dataCompleta(d);
+  }
+
+  // ---------- Tabela: linha clicável ----------
+  // Linha `.ds-tabela-linha-clicavel[tabindex="0"]` não é botão nativo:
+  // Enter/Espaço (quando o foco está na própria linha) viram um clique.
+  function ligarLinhasClicaveis() {
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('ds-tabela-linha-clicavel')) return;
+      e.preventDefault();
+      t.click();
+    });
+  }
+
+  function iniciar() {
+    hidratarRodapes();
+    hidratarMenus();
+    hidratarDropdowns();
+    hidratarPesquisas();
+    hidratarFiltros();
+    hidratarMascaras();
+    hidratarAbas();
+    hidratarCarrosseis();
+    hidratarPaginacoes();
+    hidratarMedidores();
+    sincronizarLogos();
+  }
+
+  ligarLinhasClicaveis();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar);
+  } else {
+    iniciar();
+  }
+
+  try {
+    new MutationObserver(sincronizarLogos).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+  } catch (e) {
+    /* sem MutationObserver o rodapé fica no logo do tema do carregamento */
+  }
+
+  window.KyvvoDS = window.KyvvoDS || {};
+  window.KyvvoDS.rodapeLogado = rodapeLogadoHtml;
+  window.KyvvoDS.menuAlternar = menuAlternar;
+  window.KyvvoDS.acoesFechar = acoesFechar;
+  window.KyvvoDS.dropdownValores = ddValores;
+  window.KyvvoDS.dropdownDefinir = ddDefinir;
+  window.KyvvoDS.pesquisaLimpar = pesquisaLimpar;
+  window.KyvvoDS.filtrosEstado = filtrosEstado;
+  window.KyvvoDS.filtrosLimpar = filtrosLimpar;
+  window.KyvvoDS.mascara = mascara;
+  window.KyvvoDS.abasSelecionar = abasSelecionar;
+  window.KyvvoDS.abasAtiva = abasAtiva;
+  window.KyvvoDS.carrosselIr = carrosselIr;
+  window.KyvvoDS.carrosselIndice = function (el) { prepararCarrossel(el); return carrosselIndice(el); };
+  window.KyvvoDS.modalAbrir = modalAbrir;
+  window.KyvvoDS.modalFechar = modalFechar;
+  window.KyvvoDS.selecaoBarraAtualizar = selecaoBarraAtualizar;
+  window.KyvvoDS.notificacoesAtualizar = notificacoesAtualizar;
+  window.KyvvoDS.paginacaoAtualizar = paginacaoAtualizar;
+  window.KyvvoDS.medidorAtualizar = medidorAtualizar;
+  window.KyvvoDS.dataRelativa = dataRelativa;
+  window.KyvvoDS.dataCompleta = dataCompleta;
+})();
+
+</script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); };
+  var fmtTel = function (n) { var d = n.replace(/\D/g, ''); return '+' + d.slice(0, 2) + ' ' + d.slice(2, 4) + ' ' + d.slice(4, 9) + '-' + d.slice(9); };
+
+  // ---- Automações ----
+  var automacoes = [
+    { nome: 'Feedback do serviço', gatilho: '1 dia após o atendimento', ativa: false, semModelo: true },
+    { nome: 'Confirmação de agenda', gatilho: '1 dia antes do horário', ativa: true },
+    { nome: 'Aniversário do cliente', gatilho: 'No dia do aniversário', ativa: true, semModelo: true },
+    { nome: 'Clientes inativos', gatilho: 'Sem visita há 60 dias', ativa: true },
+  ];
+  var menu = '<div class="ds-acoes"><button type="button" class="ds-acoes-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Ações">⋯</button><div class="ds-acoes-menu" role="menu" hidden>' +
+    '<button type="button" class="ds-acoes-item" role="menuitem" data-acao="editar">Editar</button>' +
+    '<button type="button" class="ds-acoes-item" role="menuitem" data-acao="duplicar">Duplicar</button><hr class="ds-acoes-separador">' +
+    '<button type="button" class="ds-acoes-item" role="menuitem" data-acao="excluir">Excluir</button></div></div>';
+  $('#auto-linhas').innerHTML = automacoes.map(function (a) {
+    return '<div class="ds-tabela-linha" role="row">' +
+      '<span role="cell"><span class="ds-tabela-primario">' + esc(a.nome) + '</span>' +
+        (a.semModelo ? '<span class="ds-badge ds-badge-aviso ds-badge-sm" style="margin-top:4px">Sem modelo aprovado</span>' : '') + '</span>' +
+      '<span role="cell" class="ds-tabela-mudo" data-rotulo="Gatilho">' + esc(a.gatilho) + '</span>' +
+      '<span role="cell"><label class="ds-switch"><input type="checkbox" role="switch" aria-label="Ativar ' + esc(a.nome) + '"' + (a.ativa && !a.semModelo ? ' checked' : '') + (a.semModelo ? ' disabled' : '') + '><span class="ds-switch-trilho"></span></label></span>' +
+      '<span role="cell" class="ds-tabela-acoes">' + menu + '</span></div>';
+  }).join('');
+
+  // ---- Disparos (dados de exemplo) ----
+  var nomes = ['Gabriela Matos', 'Patrícia Alves', 'Bruno Alves', 'Camila Costa', 'Marina Silva', 'Beatriz Rocha', 'Larissa Souza', 'Lucas Lima'];
+  var autos = ['Clientes inativos', 'Confirmação de agenda', 'Aniversário do cliente'];
+  var status = ['erro', 'entregue', 'lido', 'enviado'];
+  var agora = new Date();
+  var disparos = [];
+  for (var i = 0; i < 36; i++) {
+    var quando = new Date(agora.getTime() - i * 9.5 * 3600 * 1000);
+    var st = i < 14 ? 'erro' : status[1 + (i % 3)];
+    disparos.push({
+      id: 'wamid.HBg' + (4100 + i), quando: quando, cliente: nomes[i % nomes.length], numero: '+5534' + (990000000 + i * 7919),
+      auto: autos[i % 3], modelo: 'studio_retorno_cliente_2', modeloNome: 'Retorno do cliente', status: st,
+      erro: st === 'erro' ? 'Modelo não aprovado pela Meta (código 132001).' : '',
+      mensagem: 'Olá, ' + nomes[i % nomes.length].split(' ')[0] + '! 💜\nFaz um tempinho que não te vemos por aqui. Que tal agendar um horário essa semana?\n\nResponda esta mensagem ou acesse o link para reservar: https://studio.kyvvo.com.br/agendar',
+    });
+  }
+  var rotulos = { enviado: ['Enviado', 'ds-badge-info'], entregue: ['Entregue', 'ds-badge-sucesso'], lido: ['Lido', 'ds-badge-marca'], erro: ['Falhou', 'ds-badge-erro'] };
+  var badge = function (s) { return '<span class="ds-badge ' + rotulos[s][1] + '">' + rotulos[s][0] + '</span>'; };
+  var estado = { pagina: 1, tamanho: 10 };
+  var pag = $('#pag');
+
+  function filtrados() {
+    var b = $('#f-busca').value.trim().toLowerCase(), s = $('#f-status').value, a = $('#f-auto').value, p = $('#f-periodo').value;
+    return disparos.filter(function (d) {
+      if (b && (d.cliente + ' ' + d.numero).toLowerCase().indexOf(b) < 0) return false;
+      if (s && d.status !== s) return false;
+      if (a && d.auto !== a) return false;
+      if (p && d.quando < new Date(agora.getTime() - p * 86400000)) return false;
+      return true;
+    });
+  }
+  function desenhar() {
+    var lista = filtrados();
+    var usaFiltro = $('#f-busca').value || $('#f-status').value || $('#f-auto').value || $('#f-periodo').value;
+    $('#f-limpar').hidden = !usaFiltro;
+    var fatia = lista.slice((estado.pagina - 1) * estado.tamanho, estado.pagina * estado.tamanho);
+    $('#disp-linhas').innerHTML = fatia.length ? fatia.map(function (d) {
+      return '<div class="ds-tabela-linha ds-tabela-linha-clicavel" role="row" tabindex="0" data-id="' + d.id + '">' +
+        '<span role="cell" title="' + KyvvoDS.dataCompleta(d.quando) + '" class="ds-tabela-mudo">' + KyvvoDS.dataRelativa(d.quando) + '</span>' +
+        '<span role="cell"><span class="ds-tabela-primario">' + esc(d.cliente) + '</span><span class="ds-tabela-secundario">' + esc(d.auto) + '</span></span>' +
+        '<span role="cell" class="ds-tabela-mudo" data-rotulo="Número">' + fmtTel(d.numero) + '</span>' +
+        '<span role="cell"><span class="ds-tabela-primario">' + esc(d.modeloNome) + '</span><span class="ds-tabela-secundario">' + esc(d.modelo) + '</span></span>' +
+        '<span role="cell">' + badge(d.status) + '</span>' +
+        (d.erro ? '<span class="ds-tabela-nota">' + esc(d.erro) + '</span>' : '') + '</div>';
+    }).join('') : '<div class="ds-vazio"><span class="ds-vazio-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><p class="ds-vazio-titulo">Nenhum disparo encontrado</p><p class="ds-vazio-texto">Ajuste os filtros ou o período para ver outros resultados.</p></div>';
+    KyvvoDS.paginacaoAtualizar(pag, { total: lista.length, pagina: estado.pagina, tamanho: estado.tamanho });
+    $('#cont-d').textContent = disparos.length;
+  }
+  pag.addEventListener('ds-paginacao-alterar', function (e) { estado.pagina = e.detail.pagina; estado.tamanho = e.detail.tamanho; desenhar(); });
+  ['#f-busca', '#f-status', '#f-auto', '#f-periodo'].forEach(function (s) {
+    $(s).addEventListener(s === '#f-busca' ? 'input' : 'change', function () { estado.pagina = 1; desenhar(); });
+  });
+  $('#f-limpar').addEventListener('click', function () {
+    ['#f-busca', '#f-status', '#f-auto', '#f-periodo'].forEach(function (s) { $(s).value = ''; });
+    estado.pagina = 1; desenhar();
+  });
+
+  // ---- Detalhe do disparo ----
+  $('#disp-linhas').addEventListener('click', function (e) {
+    var linha = e.target.closest('.ds-tabela-linha-clicavel'); if (!linha) return;
+    var d = disparos.filter(function (x) { return x.id === linha.dataset.id; })[0];
+    KyvvoDS.modalAbrir(
+      '<div class="ds-detalhe">' +
+        '<div class="ds-detalhe-cab"><h3 class="ds-detalhe-titulo">' + esc(d.cliente) + '</h3>' + badge(d.status) + '</div>' +
+        (d.erro ? '<div class="ds-alerta ds-alerta-erro"><div class="ds-alerta-corpo"><p class="ds-alerta-titulo">Não foi possível enviar</p><p class="ds-alerta-texto">' + esc(d.erro) + '</p></div></div>' : '') +
+        '<dl class="ds-detalhe-grade">' +
+          '<div class="ds-detalhe-item"><dt>Enviado em</dt><dd>' + KyvvoDS.dataCompleta(d.quando) + '</dd></div>' +
+          '<div class="ds-detalhe-item"><dt>Número</dt><dd>' + fmtTel(d.numero) + '</dd></div>' +
+          '<div class="ds-detalhe-item"><dt>Automação</dt><dd>' + esc(d.auto) + '</dd></div>' +
+          '<div class="ds-detalhe-item"><dt>Modelo</dt><dd>' + esc(d.modeloNome) + '<br><span class="ds-tabela-secundario">' + esc(d.modelo) + '</span></dd></div>' +
+          '<div class="ds-detalhe-item ds-detalhe-item-largo"><dt>ID da mensagem</dt><dd>' + esc(d.id) + '</dd></div>' +
+        '</dl>' +
+        '<div><p class="ds-detalhe-secao">Mensagem enviada</p><div class="ds-mensagem"><p class="ds-mensagem-balao">' + esc(d.mensagem) + '</p><p class="ds-mensagem-rodape">' + KyvvoDS.dataCompleta(d.quando) + '</p></div></div>' +
+      '</div>', { classeExtra: 'ds-modal-card-detalhe' });
+  });
+
+  KyvvoDS.medidorAtualizar($('[data-ds-medidor]'), 0, 200);
+  desenhar();
+})();
+</script>
+</body>
+</html>

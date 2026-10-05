@@ -41,6 +41,7 @@
   --success: #12B76A;
   --success-rgb: 18, 183, 106;
   --success-bg: rgba(18, 183, 106, .10);
+  --success-text: #067647;
   --warning: #F79009;
   --warning-rgb: 247, 144, 9;
   --warning-text: #B54708;
@@ -48,6 +49,7 @@
   --danger: #F04438;
   --danger-rgb: 240, 68, 56;
   --danger-bg: rgba(240, 68, 56, .10);
+  --danger-text: #B42318;
   --info: #22C7F2;
   --info-rgb: 34, 199, 242;
   --info-bg: rgba(34, 199, 242, .10);
@@ -104,6 +106,7 @@
   --success: #4ADE80;
   --success-rgb: 74, 222, 128;
   --success-bg: rgba(74, 222, 128, .12);
+  --success-text: #4ADE80;
   --warning: #F0B354;
   --warning-rgb: 240, 179, 84;
   --warning-text: #FACC15;
@@ -111,6 +114,7 @@
   --danger: #FF6B6B;
   --danger-rgb: 255, 107, 107;
   --danger-bg: rgba(255, 107, 107, .12);
+  --danger-text: #FF6B6B;
   --info-bg: rgba(34, 199, 242, .16);
   --info-text: #67E8F9;
 

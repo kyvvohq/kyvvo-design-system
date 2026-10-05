@@ -52,6 +52,11 @@
  * Acréscimo da v2.18.0: a tela de login (`.ds-login`) — sem função nova e
  * sem `data-ds-*`: reaproveita a marca do Topbar (`.ds-topbar-marca`) e o
  * Botão (`.ds-btn-primario.ds-btn-bloco.ds-btn-lg`) como já existiam.
+ * Acréscimo da v2.19.0: paginação (data-ds-paginacao,
+ * KyvvoDS.paginacaoAtualizar), medidor de uso (data-ds-medidor,
+ * KyvvoDS.medidorAtualizar), KyvvoDS.dataRelativa/dataCompleta e Enter/Espaço
+ * em `.ds-tabela-linha-clicavel`. Cabeçalho de página, alerta, badge,
+ * switch, tabela, estado vazio e detalhe são só CSS.
  */
 (function () {
   'use strict';
@@ -1279,6 +1284,162 @@
     el.dispatchEvent(new CustomEvent('ds-selecao-alterar', { bubbles: true, detail: { quantidade: quantidade } }));
   }
 
+  // ---------- Paginação ----------
+  // <nav class="ds-paginacao" data-ds-paginacao data-ds-total="36"
+  //      data-ds-tamanho="10" data-ds-pagina="1" data-ds-tamanhos="10,25,50">
+  // O componente só desenha e avisa: dispara `ds-paginacao-alterar`
+  // (detail = { pagina, tamanho }) e o produto busca/fatia os dados e
+  // chama KyvvoDS.paginacaoAtualizar(el, { total, pagina, tamanho }).
+  function paginacaoPaginas(atual, ultima) {
+    var set = {};
+    [1, ultima, atual - 1, atual, atual + 1].forEach(function (n) { if (n >= 1 && n <= ultima) set[n] = true; });
+    var nums = Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+    var saida = [];
+    nums.forEach(function (n, i) {
+      if (i && n - nums[i - 1] === 2) saida.push(n - 1);
+      else if (i && n - nums[i - 1] > 2) saida.push(0);
+      saida.push(n);
+    });
+    return saida;
+  }
+
+  function paginacaoAtualizar(el, estado) {
+    if (!el) return;
+    var d = el.dataset;
+    estado = estado || {};
+    var total = Math.max(0, parseInt(estado.total != null ? estado.total : d.dsTotal, 10) || 0);
+    var tamanho = Math.max(1, parseInt(estado.tamanho != null ? estado.tamanho : d.dsTamanho, 10) || 10);
+    var ultima = Math.max(1, Math.ceil(total / tamanho));
+    var pagina = Math.min(ultima, Math.max(1, parseInt(estado.pagina != null ? estado.pagina : d.dsPagina, 10) || 1));
+    d.dsTotal = String(total);
+    d.dsTamanho = String(tamanho);
+    d.dsPagina = String(pagina);
+
+    var de = total ? (pagina - 1) * tamanho + 1 : 0;
+    var ate = Math.min(total, pagina * tamanho);
+    var html = '<span class="ds-paginacao-resumo" aria-live="polite">' + de + '–' + ate + ' de ' + total + '</span>';
+
+    var tamanhos = (d.dsTamanhos || '').split(',').map(function (n) { return parseInt(n, 10); }).filter(Boolean);
+    if (tamanhos.length) {
+      html += '<label class="ds-paginacao-tamanho">Por página <select>' +
+        tamanhos.map(function (n) { return '<option value="' + n + '"' + (n === tamanho ? ' selected' : '') + '>' + n + '</option>'; }).join('') +
+        '</select></label>';
+    }
+
+    if (ultima > 1) {
+      html += '<div class="ds-paginacao-nav" role="group" aria-label="Páginas">' +
+        '<button type="button" class="ds-paginacao-btn ds-paginacao-ant" data-pagina="' + (pagina - 1) + '" aria-label="Página anterior"' + (pagina === 1 ? ' disabled' : '') + '>‹</button>';
+      paginacaoPaginas(pagina, ultima).forEach(function (n) {
+        html += n === 0
+          ? '<span class="ds-paginacao-reticencias" aria-hidden="true">…</span>'
+          : '<button type="button" class="ds-paginacao-btn" data-pagina="' + n + '" aria-label="Página ' + n + '"' + (n === pagina ? ' aria-current="page"' : '') + '>' + n + '</button>';
+      });
+      html += '<button type="button" class="ds-paginacao-btn ds-paginacao-prox" data-pagina="' + (pagina + 1) + '" aria-label="Próxima página"' + (pagina === ultima ? ' disabled' : '') + '>›</button></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function paginacaoAvisar(el) {
+    el.dispatchEvent(new CustomEvent('ds-paginacao-alterar', {
+      bubbles: true,
+      detail: { pagina: parseInt(el.dataset.dsPagina, 10), tamanho: parseInt(el.dataset.dsTamanho, 10) },
+    }));
+  }
+
+  function hidratarPaginacoes() {
+    document.querySelectorAll('[data-ds-paginacao]').forEach(function (el) {
+      if (el.dataset.dsPaginacaoPronta) return;
+      el.dataset.dsPaginacaoPronta = '1';
+      el.classList.add('ds-paginacao');
+      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Paginação');
+      el.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('.ds-paginacao-btn[data-pagina]');
+        if (!btn || btn.disabled) return;
+        paginacaoAtualizar(el, { pagina: parseInt(btn.dataset.pagina, 10) });
+        paginacaoAvisar(el);
+        var foco = el.querySelector('.ds-paginacao-btn[data-pagina="' + btn.dataset.pagina + '"]');
+        if (foco) foco.focus();
+      });
+      el.addEventListener('change', function (e) {
+        if (!e.target.closest || !e.target.closest('.ds-paginacao-tamanho')) return;
+        paginacaoAtualizar(el, { tamanho: parseInt(e.target.value, 10), pagina: 1 });
+        paginacaoAvisar(el);
+        var sel = el.querySelector('.ds-paginacao-tamanho select');
+        if (sel) sel.focus();
+      });
+      paginacaoAtualizar(el);
+    });
+  }
+
+  // ---------- Medidor de uso ----------
+  // <div class="ds-medidor" data-ds-medidor data-ds-usado="0" data-ds-limite="200">
+  // Escreve em `.ds-medidor-usado`/`.ds-medidor-limite`, calcula a largura
+  // da barra e troca o tom (>= 80% aviso, >= 100% perigo).
+  function medidorAtualizar(el, usado, limite) {
+    if (!el) return;
+    usado = Math.max(0, Number(usado) || 0);
+    limite = Math.max(0, Number(limite) || 0);
+    var pct = limite ? Math.min(100, Math.round(usado / limite * 100)) : 0;
+    el.dataset.dsUsado = String(usado);
+    el.dataset.dsLimite = String(limite);
+    el.style.setProperty('--ds-medidor-pct', pct + '%');
+    el.classList.toggle('ds-medidor-aviso', limite > 0 && usado / limite >= 0.8 && usado < limite);
+    el.classList.toggle('ds-medidor-perigo', limite > 0 && usado >= limite);
+    var u = el.querySelector('.ds-medidor-usado');
+    var l = el.querySelector('.ds-medidor-limite-valor');
+    if (u) u.textContent = String(usado);
+    if (l) l.textContent = String(limite);
+    var trilho = el.querySelector('.ds-medidor-trilho');
+    if (trilho) {
+      trilho.setAttribute('role', 'progressbar');
+      trilho.setAttribute('aria-valuemin', '0');
+      trilho.setAttribute('aria-valuemax', String(limite));
+      trilho.setAttribute('aria-valuenow', String(Math.min(usado, limite)));
+    }
+    el.dispatchEvent(new CustomEvent('ds-medidor-alterar', { bubbles: true, detail: { usado: usado, limite: limite, porcentagem: pct } }));
+  }
+
+  function hidratarMedidores() {
+    document.querySelectorAll('[data-ds-medidor]').forEach(function (el) {
+      medidorAtualizar(el, el.dataset.dsUsado, el.dataset.dsLimite);
+    });
+  }
+
+  // ---------- Datas ----------
+  // dataRelativa: "Hoje, 14:03" / "Ontem, 00:03" / "04/10/2026 14:03".
+  // dataCompleta: sempre "dd/mm/aaaa hh:mm" (use no `title`/tooltip).
+  function doisDigitos(n) { return (n < 10 ? '0' : '') + n; }
+  function dataCompleta(valor) {
+    var d = valor instanceof Date ? valor : new Date(valor);
+    if (isNaN(d.getTime())) return '';
+    return doisDigitos(d.getDate()) + '/' + doisDigitos(d.getMonth() + 1) + '/' + d.getFullYear() +
+      ' ' + doisDigitos(d.getHours()) + ':' + doisDigitos(d.getMinutes());
+  }
+  function dataRelativa(valor, agora) {
+    var d = valor instanceof Date ? valor : new Date(valor);
+    if (isNaN(d.getTime())) return '';
+    var ref = agora ? new Date(agora) : new Date();
+    var dia = function (x) { return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+    var dif = Math.round((dia(ref) - dia(d)) / 86400000);
+    var hora = doisDigitos(d.getHours()) + ':' + doisDigitos(d.getMinutes());
+    if (dif === 0) return 'Hoje, ' + hora;
+    if (dif === 1) return 'Ontem, ' + hora;
+    return dataCompleta(d);
+  }
+
+  // ---------- Tabela: linha clicável ----------
+  // Linha `.ds-tabela-linha-clicavel[tabindex="0"]` não é botão nativo:
+  // Enter/Espaço (quando o foco está na própria linha) viram um clique.
+  function ligarLinhasClicaveis() {
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('ds-tabela-linha-clicavel')) return;
+      e.preventDefault();
+      t.click();
+    });
+  }
+
   function iniciar() {
     hidratarRodapes();
     hidratarMenus();
@@ -1288,8 +1449,12 @@
     hidratarMascaras();
     hidratarAbas();
     hidratarCarrosseis();
+    hidratarPaginacoes();
+    hidratarMedidores();
     sincronizarLogos();
   }
+
+  ligarLinhasClicaveis();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', iniciar);
@@ -1324,4 +1489,8 @@
   window.KyvvoDS.modalFechar = modalFechar;
   window.KyvvoDS.selecaoBarraAtualizar = selecaoBarraAtualizar;
   window.KyvvoDS.notificacoesAtualizar = notificacoesAtualizar;
+  window.KyvvoDS.paginacaoAtualizar = paginacaoAtualizar;
+  window.KyvvoDS.medidorAtualizar = medidorAtualizar;
+  window.KyvvoDS.dataRelativa = dataRelativa;
+  window.KyvvoDS.dataCompleta = dataCompleta;
 })();

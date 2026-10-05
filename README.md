@@ -517,6 +517,104 @@ um roxo novo. "Assumir atendimento" reaproveita o Botão do DS
 (`.ds-btn-secundario.ds-btn-bloco`) — não é um botão novo, só a combinação
 que já existe.
 
+### Padrão de telas de listagem (v2.19.0)
+
+Conjunto de componentes pra montar telas como **Automações** e **Disparos** do
+mesmo jeito em todo produto. Exemplo completo e funcional (filtros, paginação,
+detalhe, tema claro/escuro, mobile): [`exemplos/automacoes-disparos.standalone.html`](exemplos/automacoes-disparos.standalone.html)
+— baixe e abra no navegador, tem CSS/JS embutidos. O `automacoes-disparos.html` usa
+caminhos relativos (`../components.css`) e só funciona dentro do repo; regenere o
+standalone com `python3 exemplos/gerar-standalone.py` quando o DS mudar.
+
+**Regras de uso**
+
+1. Toda página começa com `.ds-pagina-cab` (título e **uma** ação primária; subtítulo `.ds-pagina-cab-sub` é opcional).
+2. Um acento (roxo) e quatro tons semânticos (`sucesso`, `aviso`, `erro`, `info`) — sempre via token, nunca hex solto. Texto sobre tinta usa `--success-text`/`--warning-text`/`--danger-text`/`--info-text` (os dois primeiros e o último de `--success`/`--danger` são novos em `tokens.css`).
+3. Erro sempre diz o **motivo** e, quando existir, oferece uma ação.
+4. No máximo uma ação visível por linha; o resto vai no menu `.ds-acoes` ("…").
+5. Nome técnico (ex.: `studio_retorno_cliente_2`) nunca é o título — fica como `.ds-tabela-secundario`.
+6. Datas relativas na lista (`KyvvoDS.dataRelativa`), data completa no `title` (`KyvvoDS.dataCompleta`).
+7. Toda lista tem filtros, paginação e estado vazio.
+
+**Cabeçalho de página — `.ds-pagina-cab`**
+
+```html
+<header class="ds-pagina-cab">
+  <div class="ds-pagina-cab-texto">
+    <h1 class="ds-pagina-cab-titulo">Automações</h1>
+  </div>
+  <div class="ds-pagina-cab-acoes"><button class="ds-btn ds-btn-primario">+ Nova automação</button></div>
+</header>
+```
+
+**Alerta — `.ds-alerta`** (`-info`, `-aviso`, `-erro`, `-sucesso`). Ícone desenhado em CSS; `.ds-alerta-acao` é opcional (botão/link à direita; desce no mobile).
+
+```html
+<div class="ds-alerta ds-alerta-aviso" role="status">
+  <div class="ds-alerta-corpo">
+    <p class="ds-alerta-titulo">Nenhum modelo aprovado</p>
+    <p class="ds-alerta-texto">Automações sem modelo ficam pausadas.</p>
+  </div>
+  <a class="ds-btn ds-btn-secundario ds-btn-sm ds-alerta-acao" href="…">Ver como aprovar</a>
+</div>
+```
+
+**Badge — `.ds-badge`** (`-sucesso`, `-aviso`, `-erro`, `-info`, `-marca`; neutro por padrão; `-sm`, `-sem-ponto`). Ponto + rótulo: a cor nunca é o único sinal.
+
+**Switch — `.ds-switch`**. O `input` fica por cima, invisível, então segue focável e anunciado como switch. `disabled` apaga o controle (use quando a automação não pode ser ligada).
+
+```html
+<label class="ds-switch">
+  <input type="checkbox" role="switch" aria-label="Ativar Confirmação de agenda" checked>
+  <span class="ds-switch-trilho"></span>
+</label>
+```
+
+**Tabela — `.ds-tabela`**. Cartão com (opcional) `.ds-filtros` no topo, `.ds-tabela-cabecalho`, `.ds-tabela-linha`s e `.ds-tabela-rodape` (paginação). Marcação `role="table"/"row"/"cell"` em `<div>`, como `.ds-conversas`; o produto define as larguras em `--ds-colunas`. Linha clicável: `.ds-tabela-linha-clicavel` + `tabindex="0"` (Enter/Espaço viram clique). `.ds-tabela-nota` é uma linha extra sob as células (ex.: motivo da falha). No mobile (≤640px) a linha vira cartão; `data-rotulo="…"` na célula mostra o nome da coluna.
+
+```html
+<div class="ds-tabela" role="table" aria-label="Disparos"
+     style="--ds-colunas: 130px 1.2fr 1.2fr 1.3fr 130px">
+  <div class="ds-filtros">…busca + filtros…</div>
+  <div class="ds-tabela-cabecalho" role="row"><span role="columnheader">Quando</span>…</div>
+  <div class="ds-tabela-linha ds-tabela-linha-clicavel" role="row" tabindex="0">
+    <span role="cell">Hoje, 14:03</span>
+    <span role="cell"><span class="ds-tabela-primario">Gabriela Matos</span><span class="ds-tabela-secundario">Clientes inativos</span></span>
+    …
+    <span class="ds-tabela-nota">Modelo não aprovado pela Meta.</span>
+  </div>
+  <div class="ds-tabela-rodape"><nav data-ds-paginacao …></nav></div>
+</div>
+```
+
+**Paginação — `data-ds-paginacao`**. O componente desenha "1–10 de 36", páginas com reticências, anterior/próxima e (se `data-ds-tamanhos`) "Por página". Ele **não** busca dados: dispara `ds-paginacao-alterar` (`detail = { pagina, tamanho }`) e o produto responde com `KyvvoDS.paginacaoAtualizar(el, { total, pagina, tamanho })`. Mudar o tamanho volta pra página 1.
+
+```html
+<nav data-ds-paginacao data-ds-total="36" data-ds-tamanho="10" data-ds-pagina="1" data-ds-tamanhos="10,25,50"></nav>
+```
+```js
+nav.addEventListener('ds-paginacao-alterar', e => carregar(e.detail.pagina, e.detail.tamanho));
+```
+
+**Filtros de listagem.** Reaproveite `.ds-filtros` (busca `.ds-pesquisa` + `.ds-select`/`.ds-dropdown` + "Limpar filtros"). Ao mudar qualquer filtro, volte pra página 1. Para Disparos, os filtros mínimos são: busca (cliente/número), status, automação e período.
+
+**Medidor de uso — `data-ds-medidor`**. `KyvvoDS.medidorAtualizar(el, usado, limite)` calcula a barra e troca o tom: ≥ 80% aviso, ≥ 100% perigo. Escreve em `.ds-medidor-usado` e `.ds-medidor-limite-valor`; o trilho ganha `role="progressbar"`. Use `.ds-medidor-legenda` pra "renova em…" e um link de upgrade no cabeçalho.
+
+```html
+<div class="ds-medidor" data-ds-medidor data-ds-usado="0" data-ds-limite="200">
+  <div class="ds-medidor-cab"><p class="ds-medidor-rotulo">Disparos este mês · plano Smart</p><a class="ds-btn ds-btn-ghost ds-btn-sm" href="…">Ver planos</a></div>
+  <p class="ds-medidor-valor"><span class="ds-medidor-usado">0</span> <span class="ds-medidor-limite">de <span class="ds-medidor-limite-valor">200</span></span></p>
+  <div class="ds-medidor-trilho"><div class="ds-medidor-barra"></div></div>
+  <p class="ds-medidor-legenda"><span>Renova em 01/11</span></p>
+</div>
+```
+
+**Estado vazio — `.ds-vazio`**: `.ds-vazio-icone` (SVG do produto), `.ds-vazio-titulo`, `.ds-vazio-texto` e, opcional, um `.ds-btn`.
+
+**Detalhe de registro — `.ds-detalhe`** (dentro de `KyvvoDS.modalAbrir`, com `classeExtra: 'ds-modal-card-detalhe'`). Ao clicar numa linha de Disparos, abra o disparo completo: título + badge, `.ds-alerta-erro` com o motivo (se falhou), `.ds-detalhe-grade` com os campos (data, número, automação, modelo, ID) e a **mensagem inteira** em `.ds-mensagem` > `.ds-mensagem-balao` (preserva quebras de linha, rola se for longa). Veja a marcação completa no exemplo.
+
+**Datas.** `KyvvoDS.dataRelativa(valor)` → "Hoje, 14:03" / "Ontem, 00:03" / "03/10/2026 14:41"; `KyvvoDS.dataCompleta(valor)` → "dd/mm/aaaa hh:mm" (aceita `Date`, ISO ou timestamp).
+
 ### Tela de login — `.ds-login`
 
 Componente novo (v2.18.0). Padroniza a tela de entrada de cada produto —
