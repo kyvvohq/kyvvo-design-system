@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automações e Disparos — exemplo do DS</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-ui); color: var(--text); }
+  main { max-width: 1120px; margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); }
+  .pilha { display: flex; flex-direction: column; gap: var(--space-4); }
+</style>
+</head>
+<body>
+<main>
+  <header class="ds-pagina-cab">
+    <div class="ds-pagina-cab-texto">
+      <h1 class="ds-pagina-cab-titulo">Automações</h1>
+      <p class="ds-pagina-cab-sub">Mensagens automáticas no WhatsApp, disparadas por eventos do seu negócio.</p>
+    </div>
+    <div class="ds-pagina-cab-acoes">
+      <button type="button" class="ds-btn ds-btn-primario" id="nova">+ Nova automação</button>
+    </div>
+  </header>
+
+  <div class="ds-abas" data-ds-abas>
+    <div class="ds-abas-lista" role="tablist">
+      <button class="ds-aba" role="tab" id="aba-a" aria-controls="p-a" aria-selected="true">Automações</button>
+      <button class="ds-aba" role="tab" id="aba-d" aria-controls="p-d" aria-selected="false">Disparos <span class="ds-aba-contagem" id="cont-d">0</span></button>
+    </div>
+
+    <section class="ds-abas-painel pilha" role="tabpanel" id="p-a" aria-labelledby="aba-a">
+      <div class="ds-alerta ds-alerta-aviso" role="status">
+        <div class="ds-alerta-corpo">
+          <p class="ds-alerta-titulo">Nenhum modelo de disparo aprovado na conta do WhatsApp</p>
+          <p class="ds-alerta-texto">Automações sem modelo ficam pausadas até você aprovar um modelo na Meta.</p>
+        </div>
+        <a class="ds-btn ds-btn-secundario ds-btn-sm ds-alerta-acao" href="#">Ver como aprovar</a>
+      </div>
+
+      <div class="ds-tabela" role="table" aria-label="Automações" style="--ds-colunas: minmax(0,1.6fr) minmax(0,1.4fr) 110px 48px">
+        <div class="ds-filtros">
+          <div class="ds-pesquisa">
+            <svg class="ds-pesquisa-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="ds-pesquisa-input" type="search" placeholder="Buscar automação" aria-label="Buscar automação">
+          </div>
+        </div>
+        <div class="ds-tabela-cabecalho" role="row">
+          <span role="columnheader">Nome</span><span role="columnheader">Gatilho</span><span role="columnheader">Ativa</span><span role="columnheader"></span>
+        </div>
+        <div id="auto-linhas"></div>
+      </div>
+    </section>
+
+    <section class="ds-abas-painel pilha" role="tabpanel" id="p-d" aria-labelledby="aba-d" hidden>
+      <div class="ds-medidor" data-ds-medidor data-ds-usado="0" data-ds-limite="200">
+        <div class="ds-medidor-cab">
+          <p class="ds-medidor-rotulo">Disparos de WhatsApp este mês · plano Smart</p>
+          <a class="ds-btn ds-btn-ghost ds-btn-sm" href="#">Ver planos</a>
+        </div>
+        <p class="ds-medidor-valor"><span class="ds-medidor-usado">0</span> <span class="ds-medidor-limite">de <span class="ds-medidor-limite-valor">200</span></span></p>
+        <div class="ds-medidor-trilho"><div class="ds-medidor-barra"></div></div>
+        <p class="ds-medidor-legenda"><span>Renova em 01/11</span><span>Falhas não consomem o limite</span></p>
+      </div>
+
+      <div class="ds-tabela" role="table" aria-label="Disparos" style="--ds-colunas: 130px minmax(0,1.2fr) minmax(0,1.2fr) minmax(0,1.3fr) 130px">
+        <div class="ds-filtros" data-ds-filtros>
+          <div class="ds-pesquisa">
+            <svg class="ds-pesquisa-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="ds-pesquisa-input" type="search" id="f-busca" placeholder="Buscar cliente ou número" aria-label="Buscar cliente ou número">
+          </div>
+          <div class="ds-select"><select id="f-status" aria-label="Status">
+            <option value="">Todos os status</option><option value="enviado">Enviado</option><option value="entregue">Entregue</option><option value="lido">Lido</option><option value="erro">Falhou</option>
+          </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+          <div class="ds-select"><select id="f-auto" aria-label="Automação">
+            <option value="">Todas as automações</option><option>Clientes inativos</option><option>Confirmação de agenda</option><option>Aniversário do cliente</option>
+          </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+          <div class="ds-select"><select id="f-periodo" aria-label="Período">
+            <option value="">Todo o período</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option>
+          </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+          <div class="ds-filtros-fim"><button type="button" class="ds-btn ds-btn-ghost ds-btn-sm" id="f-limpar" hidden>Limpar filtros</button></div>
+        </div>
+        <div class="ds-tabela-cabecalho" role="row">
+          <span role="columnheader">Quando</span><span role="columnheader">Cliente</span><span role="columnheader">Número</span><span role="columnheader">Modelo</span><span role="columnheader">Status</span>
+        </div>
+        <div id="disp-linhas"></div>
+        <div class="ds-tabela-rodape"><nav data-ds-paginacao data-ds-total="0" data-ds-tamanho="10" data-ds-tamanhos="10,25,50" id="pag"></nav></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="../components.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); };
+  var fmtTel = function (n) { var d = n.replace(/\D/g, ''); return '+' + d.slice(0, 2) + ' ' + d.slice(2, 4) + ' ' + d.slice(4, 9) + '-' + d.slice(9); };
+
+  // ---- Automações ----
+  var automacoes = [
+    { nome: 'Feedback do serviço', gatilho: '1 dia após o atendimento', ativa: false, semModelo: true },
+    { nome: 'Confirmação de agenda', gatilho: '1 dia antes do horário', ativa: true },
+    { nome: 'Aniversário do cliente', gatilho: 'No dia do aniversário', ativa: true, semModelo: true },
+    { nome: 'Clientes inativos', gatilho: 'Sem visita há 60 dias', ativa: true },
+  ];
+  var menu = '<div class="ds-acoes"><button type="button" class="ds-acoes-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Ações">⋯</button><div class="ds-acoes-menu" role="menu" hidden>' +
+    '<button type="button" class="ds-acoes-item" role="menuitem" data-acao="editar">Editar</button>' +
+    '<button type="button" class="ds-acoes-item" role="menuitem" data-acao="duplicar">Duplicar</button><hr class="ds-acoes-separador">' +
+    '<button type="button" class="ds-acoes-item" role="menuitem" data-acao="excluir">Excluir</button></div></div>';
+  $('#auto-linhas').innerHTML = automacoes.map(function (a) {
+    return '<div class="ds-tabela-linha" role="row">' +
+      '<span role="cell"><span class="ds-tabela-primario">' + esc(a.nome) + '</span>' +
+        (a.semModelo ? '<span class="ds-badge ds-badge-aviso ds-badge-sm" style="margin-top:4px">Sem modelo aprovado</span>' : '') + '</span>' +
+      '<span role="cell" class="ds-tabela-mudo" data-rotulo="Gatilho">' + esc(a.gatilho) + '</span>' +
+      '<span role="cell"><label class="ds-switch"><input type="checkbox" role="switch" aria-label="Ativar ' + esc(a.nome) + '"' + (a.ativa && !a.semModelo ? ' checked' : '') + (a.semModelo ? ' disabled' : '') + '><span class="ds-switch-trilho"></span></label></span>' +
+      '<span role="cell" class="ds-tabela-acoes">' + menu + '</span></div>';
+  }).join('');
+
+  // ---- Disparos (dados de exemplo) ----
+  var nomes = ['Gabriela Matos', 'Patrícia Alves', 'Bruno Alves', 'Camila Costa', 'Marina Silva', 'Beatriz Rocha', 'Larissa Souza', 'Lucas Lima'];
+  var autos = ['Clientes inativos', 'Confirmação de agenda', 'Aniversário do cliente'];
+  var status = ['erro', 'entregue', 'lido', 'enviado'];
+  var agora = new Date();
+  var disparos = [];
+  for (var i = 0; i < 36; i++) {
+    var quando = new Date(agora.getTime() - i * 9.5 * 3600 * 1000);
+    var st = i < 14 ? 'erro' : status[1 + (i % 3)];
+    disparos.push({
+      id: 'wamid.HBg' + (4100 + i), quando: quando, cliente: nomes[i % nomes.length], numero: '+5534' + (990000000 + i * 7919),
+      auto: autos[i % 3], modelo: 'studio_retorno_cliente_2', modeloNome: 'Retorno do cliente', status: st,
+      erro: st === 'erro' ? 'Modelo não aprovado pela Meta (código 132001).' : '',
+      mensagem: 'Olá, ' + nomes[i % nomes.length].split(' ')[0] + '! 💜\nFaz um tempinho que não te vemos por aqui. Que tal agendar um horário essa semana?\n\nResponda esta mensagem ou acesse o link para reservar: https://studio.kyvvo.com.br/agendar',
+    });
+  }
+  var rotulos = { enviado: ['Enviado', 'ds-badge-info'], entregue: ['Entregue', 'ds-badge-sucesso'], lido: ['Lido', 'ds-badge-marca'], erro: ['Falhou', 'ds-badge-erro'] };
+  var badge = function (s) { return '<span class="ds-badge ' + rotulos[s][1] + '">' + rotulos[s][0] + '</span>'; };
+  var estado = { pagina: 1, tamanho: 10 };
+  var pag = $('#pag');
+
+  function filtrados() {
+    var b = $('#f-busca').value.trim().toLowerCase(), s = $('#f-status').value, a = $('#f-auto').value, p = $('#f-periodo').value;
+    return disparos.filter(function (d) {
+      if (b && (d.cliente + ' ' + d.numero).toLowerCase().indexOf(b) < 0) return false;
+      if (s && d.status !== s) return false;
+      if (a && d.auto !== a) return false;
+      if (p && d.quando < new Date(agora.getTime() - p * 86400000)) return false;
+      return true;
+    });
+  }
+  function desenhar() {
+    var lista = filtrados();
+    var usaFiltro = $('#f-busca').value || $('#f-status').value || $('#f-auto').value || $('#f-periodo').value;
+    $('#f-limpar').hidden = !usaFiltro;
+    var fatia = lista.slice((estado.pagina - 1) * estado.tamanho, estado.pagina * estado.tamanho);
+    $('#disp-linhas').innerHTML = fatia.length ? fatia.map(function (d) {
+      return '<div class="ds-tabela-linha ds-tabela-linha-clicavel" role="row" tabindex="0" data-id="' + d.id + '">' +
+        '<span role="cell" title="' + KyvvoDS.dataCompleta(d.quando) + '" class="ds-tabela-mudo">' + KyvvoDS.dataRelativa(d.quando) + '</span>' +
+        '<span role="cell"><span class="ds-tabela-primario">' + esc(d.cliente) + '</span><span class="ds-tabela-secundario">' + esc(d.auto) + '</span></span>' +
+        '<span role="cell" class="ds-tabela-mudo" data-rotulo="Número">' + fmtTel(d.numero) + '</span>' +
+        '<span role="cell"><span class="ds-tabela-primario">' + esc(d.modeloNome) + '</span><span class="ds-tabela-secundario">' + esc(d.modelo) + '</span></span>' +
+        '<span role="cell">' + badge(d.status) + '</span>' +
+        (d.erro ? '<span class="ds-tabela-nota">' + esc(d.erro) + '</span>' : '') + '</div>';
+    }).join('') : '<div class="ds-vazio"><span class="ds-vazio-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><p class="ds-vazio-titulo">Nenhum disparo encontrado</p><p class="ds-vazio-texto">Ajuste os filtros ou o período para ver outros resultados.</p></div>';
+    KyvvoDS.paginacaoAtualizar(pag, { total: lista.length, pagina: estado.pagina, tamanho: estado.tamanho });
+    $('#cont-d').textContent = disparos.length;
+  }
+  pag.addEventListener('ds-paginacao-alterar', function (e) { estado.pagina = e.detail.pagina; estado.tamanho = e.detail.tamanho; desenhar(); });
+  ['#f-busca', '#f-status', '#f-auto', '#f-periodo'].forEach(function (s) {
+    $(s).addEventListener(s === '#f-busca' ? 'input' : 'change', function () { estado.pagina = 1; desenhar(); });
+  });
+  $('#f-limpar').addEventListener('click', function () {
+    ['#f-busca', '#f-status', '#f-auto', '#f-periodo'].forEach(function (s) { $(s).value = ''; });
+    estado.pagina = 1; desenhar();
+  });
+
+  // ---- Detalhe do disparo ----
+  $('#disp-linhas').addEventListener('click', function (e) {
+    var linha = e.target.closest('.ds-tabela-linha-clicavel'); if (!linha) return;
+    var d = disparos.filter(function (x) { return x.id === linha.dataset.id; })[0];
+    KyvvoDS.modalAbrir(
+      '<div class="ds-detalhe">' +
+        '<div class="ds-detalhe-cab"><h3 class="ds-detalhe-titulo">' + esc(d.cliente) + '</h3>' + badge(d.status) + '</div>' +
+        (d.erro ? '<div class="ds-alerta ds-alerta-erro"><div class="ds-alerta-corpo"><p class="ds-alerta-titulo">Não foi possível enviar</p><p class="ds-alerta-texto">' + esc(d.erro) + '</p></div></div>' : '') +
+        '<dl class="ds-detalhe-grade">' +
+          '<div class="ds-detalhe-item"><dt>Enviado em</dt><dd>' + KyvvoDS.dataCompleta(d.quando) + '</dd></div>' +
+          '<div class="ds-detalhe-item"><dt>Número</dt><dd>' + fmtTel(d.numero) + '</dd></div>' +
+          '<div class="ds-detalhe-item"><dt>Automação</dt><dd>' + esc(d.auto) + '</dd></div>' +
+          '<div class="ds-detalhe-item"><dt>Modelo</dt><dd>' + esc(d.modeloNome) + '<br><span class="ds-tabela-secundario">' + esc(d.modelo) + '</span></dd></div>' +
+          '<div class="ds-detalhe-item ds-detalhe-item-largo"><dt>ID da mensagem</dt><dd>' + esc(d.id) + '</dd></div>' +
+        '</dl>' +
+        '<div><p class="ds-detalhe-secao">Mensagem enviada</p><div class="ds-mensagem"><p class="ds-mensagem-balao">' + esc(d.mensagem) + '</p><p class="ds-mensagem-rodape">' + KyvvoDS.dataCompleta(d.quando) + '</p></div></div>' +
+      '</div>', { classeExtra: 'ds-modal-card-detalhe' });
+  });
+
+  KyvvoDS.medidorAtualizar($('[data-ds-medidor]'), 0, 200);
+  desenhar();
+})();
+</script>
+</body>
+</html>
