@@ -521,7 +521,10 @@ que já existe.
 
 Conjunto de componentes pra montar telas como **Automações** e **Disparos** do
 mesmo jeito em todo produto. Exemplo completo e funcional (filtros, paginação,
-detalhe, tema claro/escuro, mobile): [`exemplos/automacoes-disparos.html`](exemplos/automacoes-disparos.html).
+detalhe, tema claro/escuro, mobile): [`exemplos/automacoes-disparos.standalone.html`](exemplos/automacoes-disparos.standalone.html)
+— baixe e abra no navegador, tem CSS/JS embutidos. O `automacoes-disparos.html` usa
+caminhos relativos (`../components.css`) e só funciona dentro do repo; regenere o
+standalone com `python3 exemplos/gerar-standalone.py` quando o DS mudar.
 
 **Regras de uso**
 
