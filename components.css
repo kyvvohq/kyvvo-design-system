@@ -24,6 +24,8 @@
  * Acréscimo da v2.18.0: tela de login (.ds-login) — sem o wordmark Kyvvo;
  * a marca do produto reaproveita o Topbar (.ds-topbar-marca/-produto/
  * -kyvvo) como está. Campo usa --sunken (poço de input), não --input-bg.
+ * v2.19.1: `[hidden]` volta a esconder `.ds-btn`/`.ds-vazio`; `.ds-paginacao` sem quebra
+ * de linha em "Por página".
  * Acréscimo da v2.19.0: padrão de telas de listagem — .ds-pagina-cab,
  * .ds-alerta, .ds-badge, .ds-switch, .ds-tabela, .ds-paginacao,
  * .ds-medidor, .ds-vazio e .ds-detalhe. tokens.css ganhou --success-text
@@ -692,6 +694,7 @@
 }
 .ds-btn[aria-busy="true"] > svg { display: none; }
 @keyframes ds-giro { to { transform: rotate(360deg); } }
+.ds-btn[hidden] { display: none; }
 .ds-btn-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
 /* ---------- Formulário ---------- */
@@ -1974,8 +1977,8 @@
   font-size: 13px;
   color: var(--muted-strong);
 }
-.ds-paginacao-resumo { margin-right: auto; }
-.ds-paginacao-tamanho { display: inline-flex; align-items: center; gap: var(--space-2); }
+.ds-paginacao-resumo { margin-right: auto; white-space: nowrap; }
+.ds-paginacao-tamanho { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
 .ds-paginacao-tamanho select {
   height: 32px;
   padding: 0 var(--space-2);
@@ -2045,6 +2048,7 @@
   text-align: center;
   font-family: var(--font-ui);
 }
+.ds-vazio[hidden] { display: none; }
 .ds-vazio-icone {
   display: inline-flex;
   align-items: center;
