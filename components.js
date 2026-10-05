@@ -1305,6 +1305,7 @@
 
   function paginacaoAtualizar(el, estado) {
     if (!el) return;
+    if (el.hasAttribute('data-ds-paginacao')) paginacaoLigar(el);
     var d = el.dataset;
     estado = estado || {};
     var total = Math.max(0, parseInt(estado.total != null ? estado.total : d.dsTotal, 10) || 0);
@@ -1346,27 +1347,34 @@
     }));
   }
 
+  // Liga uma `[data-ds-paginacao]` (idempotente). Chamada no load e, de novo,
+  // por paginacaoAtualizar — assim uma paginação criada depois do load (a tela
+  // redesenha o card via innerHTML) também fica interativa sem chamada extra.
+  function paginacaoLigar(el) {
+    if (!el || el.dataset.dsPaginacaoPronta) return;
+    el.dataset.dsPaginacaoPronta = '1';
+    el.classList.add('ds-paginacao');
+    if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Paginação');
+    el.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.ds-paginacao-btn[data-pagina]');
+      if (!btn || btn.disabled) return;
+      paginacaoAtualizar(el, { pagina: parseInt(btn.dataset.pagina, 10) });
+      paginacaoAvisar(el);
+      var foco = el.querySelector('.ds-paginacao-btn[data-pagina="' + btn.dataset.pagina + '"]');
+      if (foco) foco.focus();
+    });
+    el.addEventListener('change', function (e) {
+      if (!e.target.closest || !e.target.closest('.ds-paginacao-tamanho')) return;
+      paginacaoAtualizar(el, { tamanho: parseInt(e.target.value, 10), pagina: 1 });
+      paginacaoAvisar(el);
+      var sel = el.querySelector('.ds-paginacao-tamanho select');
+      if (sel) sel.focus();
+    });
+  }
+
   function hidratarPaginacoes() {
     document.querySelectorAll('[data-ds-paginacao]').forEach(function (el) {
-      if (el.dataset.dsPaginacaoPronta) return;
-      el.dataset.dsPaginacaoPronta = '1';
-      el.classList.add('ds-paginacao');
-      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Paginação');
-      el.addEventListener('click', function (e) {
-        var btn = e.target.closest && e.target.closest('.ds-paginacao-btn[data-pagina]');
-        if (!btn || btn.disabled) return;
-        paginacaoAtualizar(el, { pagina: parseInt(btn.dataset.pagina, 10) });
-        paginacaoAvisar(el);
-        var foco = el.querySelector('.ds-paginacao-btn[data-pagina="' + btn.dataset.pagina + '"]');
-        if (foco) foco.focus();
-      });
-      el.addEventListener('change', function (e) {
-        if (!e.target.closest || !e.target.closest('.ds-paginacao-tamanho')) return;
-        paginacaoAtualizar(el, { tamanho: parseInt(e.target.value, 10), pagina: 1 });
-        paginacaoAvisar(el);
-        var sel = el.querySelector('.ds-paginacao-tamanho select');
-        if (sel) sel.focus();
-      });
+      paginacaoLigar(el);
       paginacaoAtualizar(el);
     });
   }
